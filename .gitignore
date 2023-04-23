@@ -3,12 +3,6 @@
 [Rr]elease/
 x64/
 .vs/
-Boost/
-Eigen/
-Flann/
-pcl/
-lib/
-bin/
 
 [Ext]
 *.pdb
