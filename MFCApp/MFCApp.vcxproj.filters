@@ -39,6 +39,9 @@
     <ClInclude Include="pch.h">
       <Filter>標頭檔</Filter>
     </ClInclude>
+    <ClInclude Include="ExtDll.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MFCApp.cpp">
@@ -54,6 +57,9 @@
       <Filter>來源檔案</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
+      <Filter>來源檔案</Filter>
+    </ClCompile>
+    <ClCompile Include="ExtDll.cpp">
       <Filter>來源檔案</Filter>
     </ClCompile>
   </ItemGroup>

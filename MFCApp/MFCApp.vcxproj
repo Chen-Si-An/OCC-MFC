@@ -184,6 +184,7 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ExtDll.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="MFCApp.h" />
@@ -194,6 +195,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ExtDll.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="MFCApp.cpp" />
     <ClCompile Include="MFCDoc.cpp" />
