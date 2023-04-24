@@ -62,3 +62,8 @@ void COCCView::SetWindow(HWND hwnd)
 		m_hWindow->Map();
 }
 
+void COCCView::Redraw()
+{
+	if (!m_hView.IsNull())
+		m_hView->Redraw();
+}

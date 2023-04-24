@@ -70,7 +70,7 @@ BOOL COCCLibApp::InitInstance()
 
 extern "C" void* PASCAL EXPORT NewView()
 {
-	//AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
 	COCCView *pOCCView = new COCCView;
 	m_ayOCCView.push_back(pOCCView);
@@ -78,9 +78,9 @@ extern "C" void* PASCAL EXPORT NewView()
 	return (void*)pOCCView;
 }
 
-extern "C" void PASCAL EXPORT RemoveView(void *pView)
+extern "C" void PASCAL EXPORT DeleteView(void *pView)
 {
-	//AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
 	if (!pView)
 		return;
@@ -101,7 +101,7 @@ extern "C" void PASCAL EXPORT RemoveView(void *pView)
 
 extern "C" void PASCAL EXPORT CreateContext(void *pView)
 {
-	//AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
 	COCCView *pOCCView = (COCCView*)pView;
 	if (!pOCCView)
@@ -119,4 +119,15 @@ extern "C" void PASCAL EXPORT SetWindow(void *pView, HWND hwnd)
 		return;
 
 	return pOCCView->SetWindow(hwnd);
+}
+
+extern "C" void PASCAL EXPORT Redraw(void* pView)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	COCCView* pOCCView = (COCCView*)pView;
+	if (!pOCCView)
+		return;
+
+	return pOCCView->Redraw();
 }

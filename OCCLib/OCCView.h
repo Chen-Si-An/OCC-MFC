@@ -22,5 +22,6 @@ public:
 	//Create the view
 	void CreateContext();
 	void SetWindow(HWND hwnd);
+	void Redraw();
 };
 

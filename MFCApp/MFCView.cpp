@@ -12,10 +12,13 @@
 
 #include "MFCDoc.h"
 #include "MFCView.h"
+#include "ExtDll.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+
+extern CExtDll g_ExtDll;
 
 
 // CMFCView
@@ -27,18 +30,23 @@ BEGIN_MESSAGE_MAP(CMFCView, CView)
 	ON_COMMAND(ID_FILE_PRINT, &CView::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_DIRECT, &CView::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CView::OnFilePrintPreview)
+	ON_WM_CREATE()
 END_MESSAGE_MAP()
 
 // CMFCView 建構/解構
 
 CMFCView::CMFCView() noexcept
 {
-	// TODO: 在此加入建構程式碼
-
+	m_pOCCView = NULL;
 }
 
 CMFCView::~CMFCView()
 {
+	if (m_pOCCView)
+	{
+		g_ExtDll.DeleteView(m_pOCCView);
+		m_pOCCView = NULL;
+	}
 }
 
 BOOL CMFCView::PreCreateWindow(CREATESTRUCT& cs)
@@ -47,6 +55,19 @@ BOOL CMFCView::PreCreateWindow(CREATESTRUCT& cs)
 	// 達到修改視窗類別或樣式的目的
 
 	return CView::PreCreateWindow(cs);
+}
+
+void CMFCView::OnInitialUpdate()
+{
+	CView::OnInitialUpdate();
+
+	// TODO: 在此加入特定的程式碼和 (或) 呼叫基底類別
+	m_pOCCView = g_ExtDll.NewView();
+	if (m_pOCCView)
+	{
+		g_ExtDll.CreateContext(m_pOCCView);
+		g_ExtDll.SetWindow(m_pOCCView, m_hWnd);
+	}
 }
 
 // CMFCView 繪圖
@@ -59,6 +80,8 @@ void CMFCView::OnDraw(CDC* /*pDC*/)
 		return;
 
 	// TODO: 在此加入原生資料的描繪程式碼
+	if (m_pOCCView)
+		g_ExtDll.Redraw(m_pOCCView);
 }
 
 
@@ -103,3 +126,5 @@ CMFCDoc* CMFCView::GetDocument() const // 內嵌非偵錯版本
 
 
 // CMFCView 訊息處理常式
+
+

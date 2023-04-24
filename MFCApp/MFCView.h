@@ -22,6 +22,7 @@ public:
 public:
 	virtual void OnDraw(CDC* pDC);  // 覆寫以描繪此檢視
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+	virtual void OnInitialUpdate();
 protected:
 	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
 	virtual void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
@@ -40,6 +41,9 @@ protected:
 // 產生的訊息對應函式
 protected:
 	DECLARE_MESSAGE_MAP()
+public:
+	void* m_pOCCView;
+
 };
 
 #ifndef _DEBUG  // 對 MFCView.cpp 中的版本進行偵錯
