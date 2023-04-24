@@ -9,6 +9,7 @@
 #include "MFCApp.h"
 #include "MainFrm.h"
 
+#include "ExtDll.h"
 #include "MFCDoc.h"
 #include "MFCView.h"
 
@@ -55,6 +56,8 @@ CMFCApp::CMFCApp() noexcept
 
 CMFCApp theApp;
 
+CExtDll g_ExtDll;
+
 
 // CMFCApp 初始化
 
@@ -96,6 +99,9 @@ BOOL CMFCApp::InitInstance()
 	// (例如，公司名稱或組織名稱)
 	SetRegistryKey(_T("本機 AppWizard 所產生的應用程式"));
 	LoadStdProfileSettings(4);  // 載入標準 INI 檔選項 (包含 MRU)
+
+
+	g_ExtDll.LoadDriver();
 
 
 	// 登錄應用程式的文件範本。文件範本負責在文件、
