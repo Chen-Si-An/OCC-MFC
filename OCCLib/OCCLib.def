@@ -8,4 +8,8 @@ EXPORTS
     DeleteView;
     CreateContext;
     SetWindow;
-    Redraw;
+    EraseAllView;
+    Resize;
+    UpdateCurrentViewer;
+    DrawCoordSys;
+    DrawHorzPlane;

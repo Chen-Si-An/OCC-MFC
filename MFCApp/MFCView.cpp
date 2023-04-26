@@ -31,6 +31,15 @@ BEGIN_MESSAGE_MAP(CMFCView, CView)
 	ON_COMMAND(ID_FILE_PRINT_DIRECT, &CView::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CView::OnFilePrintPreview)
 	ON_WM_CREATE()
+	ON_WM_SIZE()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_LBUTTONUP()
+	ON_WM_MBUTTONDOWN()
+	ON_WM_MBUTTONUP()
+	ON_WM_RBUTTONDOWN()
+	ON_WM_RBUTTONUP()
+	ON_WM_MOUSEMOVE()
+	ON_WM_MOUSEHWHEEL()
 END_MESSAGE_MAP()
 
 // CMFCView 建構/解構
@@ -81,7 +90,11 @@ void CMFCView::OnDraw(CDC* /*pDC*/)
 
 	// TODO: 在此加入原生資料的描繪程式碼
 	if (m_pOCCView)
-		g_ExtDll.Redraw(m_pOCCView);
+	{
+		DrawScene3D();
+
+		g_ExtDll.UpdateCurrentViewer(m_pOCCView);
+	}
 }
 
 
@@ -128,3 +141,90 @@ CMFCDoc* CMFCView::GetDocument() const // 內嵌非偵錯版本
 // CMFCView 訊息處理常式
 
 
+void CMFCView::DrawScene3D()
+{
+	if (!m_pOCCView)
+		return;
+
+	g_ExtDll.EraseAllView(m_pOCCView);
+
+	//Draw the background
+	g_ExtDll.DrawCoordSys(m_pOCCView);
+	g_ExtDll.DrawHorzPlane(m_pOCCView);
+}
+
+
+void CMFCView::OnSize(UINT nType, int cx, int cy)
+{
+	CView::OnSize(nType, cx, cy);
+
+	// TODO: 在此加入您的訊息處理常式程式碼
+	if (m_pOCCView)
+		g_ExtDll.Resize(m_pOCCView);
+}
+
+
+void CMFCView::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	// TODO: 在此加入您的訊息處理常式程式碼和 (或) 呼叫預設值
+
+	CView::OnLButtonDown(nFlags, point);
+}
+
+
+void CMFCView::OnLButtonUp(UINT nFlags, CPoint point)
+{
+	// TODO: 在此加入您的訊息處理常式程式碼和 (或) 呼叫預設值
+
+	CView::OnLButtonUp(nFlags, point);
+}
+
+
+void CMFCView::OnMButtonDown(UINT nFlags, CPoint point)
+{
+	// TODO: 在此加入您的訊息處理常式程式碼和 (或) 呼叫預設值
+
+	CView::OnMButtonDown(nFlags, point);
+}
+
+
+void CMFCView::OnMButtonUp(UINT nFlags, CPoint point)
+{
+	// TODO: 在此加入您的訊息處理常式程式碼和 (或) 呼叫預設值
+
+	CView::OnMButtonUp(nFlags, point);
+}
+
+
+void CMFCView::OnRButtonDown(UINT nFlags, CPoint point)
+{
+	// TODO: 在此加入您的訊息處理常式程式碼和 (或) 呼叫預設值
+
+	CView::OnRButtonDown(nFlags, point);
+}
+
+
+void CMFCView::OnRButtonUp(UINT nFlags, CPoint point)
+{
+	// TODO: 在此加入您的訊息處理常式程式碼和 (或) 呼叫預設值
+
+	CView::OnRButtonUp(nFlags, point);
+}
+
+
+void CMFCView::OnMouseMove(UINT nFlags, CPoint point)
+{
+	// TODO: 在此加入您的訊息處理常式程式碼和 (或) 呼叫預設值
+
+	CView::OnMouseMove(nFlags, point);
+}
+
+
+void CMFCView::OnMouseHWheel(UINT nFlags, short zDelta, CPoint pt)
+{
+	// 此功能需要 Windows Vista (含) 以上版本。
+	// 符號 _WIN32_WINNT 必須 >= 0x0600。
+	// TODO: 在此加入您的訊息處理常式程式碼和 (或) 呼叫預設值
+
+	CView::OnMouseHWheel(nFlags, zDelta, pt);
+}

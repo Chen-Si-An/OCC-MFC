@@ -99,6 +99,7 @@ extern "C" void PASCAL EXPORT DeleteView(void *pView)
 	}
 }
 
+//Create the view
 extern "C" void PASCAL EXPORT CreateContext(void *pView)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -121,7 +122,7 @@ extern "C" void PASCAL EXPORT SetWindow(void *pView, HWND hwnd)
 	return pOCCView->SetWindow(hwnd);
 }
 
-extern "C" void PASCAL EXPORT Redraw(void* pView)
+extern "C" void PASCAL EXPORT EraseAllView(void* pView)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -129,5 +130,50 @@ extern "C" void PASCAL EXPORT Redraw(void* pView)
 	if (!pOCCView)
 		return;
 
-	return pOCCView->Redraw();
+	return pOCCView->EraseAllView();
+}
+
+extern "C" void PASCAL EXPORT Resize(void* pView)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	COCCView *pOCCView = (COCCView*)pView;
+	if (!pOCCView)
+		return;
+
+	return pOCCView->Resize();
+}
+
+extern "C" void PASCAL EXPORT UpdateCurrentViewer(void* pView)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	COCCView* pOCCView = (COCCView*)pView;
+	if (!pOCCView)
+		return;
+
+	return pOCCView->UpdateCurrentViewer();
+}
+
+//Draw the background
+extern "C" void PASCAL EXPORT DrawCoordSys(void* pView)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	COCCView* pOCCView = (COCCView*)pView;
+	if (!pOCCView)
+		return;
+
+	return pOCCView->DrawCoordSys();
+}
+
+extern "C" void PASCAL EXPORT DrawHorzPlane(void* pView)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	COCCView* pOCCView = (COCCView*)pView;
+	if (!pOCCView)
+		return;
+
+	return pOCCView->DrawHorzPlane();
 }

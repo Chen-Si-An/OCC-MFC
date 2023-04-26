@@ -7,9 +7,17 @@ CExtDll::CExtDll()
 
 	m_NewView = NULL;
 	m_DeleteView = NULL;
-	m_Redraw = NULL;
+
+	//Create the view
 	m_CreateContext = NULL;
 	m_SetWindow = NULL;
+	m_EraseAllView = NULL;
+	m_Resize = NULL;
+	m_UpdateCurView = NULL;
+
+	//Draw the background
+	m_DrawCoordSys = NULL;
+	m_DrawHorzPlane = NULL;
 }
 
 CExtDll::~CExtDll()
@@ -42,8 +50,16 @@ void CExtDll::LoadDriver()
 		return;
 	}
 
+	//Create the view
 	m_CreateContext = (CREATE_CONTEXT)GetProcAddress(m_hDriver, "CreateContext");
 	if (!m_CreateContext)
+	{
+		AfxMessageBox(_T("GetProcAddress Failed"));
+		return;
+	}
+
+	m_EraseAllView = (ERASE_ALL_VIEW)GetProcAddress(m_hDriver, "EraseAllView");
+	if (!m_EraseAllView)
 	{
 		AfxMessageBox(_T("GetProcAddress Failed"));
 		return;
@@ -56,8 +72,30 @@ void CExtDll::LoadDriver()
 		return;
 	}
 
-	m_Redraw = (REDRAW)GetProcAddress(m_hDriver, "Redraw");
-	if (!m_Redraw)
+	m_Resize = (RESIZE)GetProcAddress(m_hDriver, "Resize");
+	if (!m_Resize)
+	{
+		AfxMessageBox(_T("GetProcAddress Failed"));
+		return;
+	}
+
+	m_UpdateCurView = (UPDATE_CUR_VIEW)GetProcAddress(m_hDriver, "UpdateCurrentViewer");
+	if (!m_UpdateCurView)
+	{
+		AfxMessageBox(_T("GetProcAddress Failed"));
+		return;
+	}
+
+	//Draw the background
+	m_DrawCoordSys = (DRAW_COORD_SYS)GetProcAddress(m_hDriver, "DrawCoordSys");
+	if (!m_DrawCoordSys)
+	{
+		AfxMessageBox(_T("GetProcAddress Failed"));
+		return;
+	}
+
+	m_DrawHorzPlane = (DRAW_HORZ_PLANE)GetProcAddress(m_hDriver, "DrawHorzPlane");
+	if (!m_DrawHorzPlane)
 	{
 		AfxMessageBox(_T("GetProcAddress Failed"));
 		return;
@@ -78,6 +116,7 @@ void CExtDll::DeleteView(void* pView)
 	m_DeleteView(pView);
 }
 
+//Create the view
 void CExtDll::CreateContext(void* pView)
 {
 	if (!m_CreateContext)
@@ -98,11 +137,48 @@ void CExtDll::SetWindow(void* pView, HWND hwnd)
 	m_SetWindow(pView, hwnd);
 }
 
-void CExtDll::Redraw(void* pView)
+void CExtDll::EraseAllView(void* pView)
 {
-	if (!m_Redraw)
+	if (!m_EraseAllView)
 		return;
 	if (!pView)
 		return;
-	m_Redraw(pView);
+	m_EraseAllView(pView);
+}
+
+void CExtDll::Resize(void* pView)
+{
+	if (!m_Resize)
+		return;
+	if (!pView)
+		return;
+	m_Resize(pView);
+}
+
+void CExtDll::UpdateCurrentViewer(void* pView)
+{
+	if (!m_UpdateCurView)
+		return;
+	if (!pView)
+		return;
+	m_UpdateCurView(pView);
+}
+
+//Draw the background
+void CExtDll::DrawCoordSys(void* pView)
+{
+	if (!m_DrawCoordSys)
+		return;
+	if (!pView)
+		return;
+	m_DrawCoordSys(pView);
+}
+
+void CExtDll::DrawHorzPlane(void* pView)
+{
+	if (!m_DrawHorzPlane)
+		return;
+	if (!pView)
+		return;
+	m_DrawHorzPlane(pView);
 }
