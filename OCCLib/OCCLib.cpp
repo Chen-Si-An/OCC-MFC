@@ -99,7 +99,7 @@ extern "C" void PASCAL EXPORT DeleteView(void *pView)
 	}
 }
 
-//Create the view
+// Create the view
 extern "C" void PASCAL EXPORT CreateContext(void *pView)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -155,7 +155,7 @@ extern "C" void PASCAL EXPORT UpdateCurrentViewer(void* pView)
 	return pOCCView->UpdateCurrentViewer();
 }
 
-//Draw the background
+// Draw the background
 extern "C" void PASCAL EXPORT DrawCoordSys(void* pView)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -176,4 +176,97 @@ extern "C" void PASCAL EXPORT DrawHorzPlane(void* pView)
 		return;
 
 	return pOCCView->DrawHorzPlane();
+}
+
+// Manipulate the camera
+extern "C" void PASCAL EXPORT ViewStartRotation(void* pView, double dCenter[3], int iMouseX, int iMouseY)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	COCCView* pOCCView = (COCCView*)pView;
+	if (!pOCCView)
+		return;
+
+	return pOCCView->ViewStartRotation(gp_Pnt(dCenter[0], dCenter[1], dCenter[2]), iMouseX, iMouseY);
+}
+
+extern "C" void PASCAL EXPORT ViewRotation(void* pView, int iMouseX, int iMouseY)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	COCCView* pOCCView = (COCCView*)pView;
+	if (!pOCCView)
+		return;
+
+	return pOCCView->ViewRotation(iMouseX, iMouseY);
+}
+
+extern "C" void PASCAL EXPORT ViewPan(void* pView, int iPanningX, int iPanningY)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	COCCView* pOCCView = (COCCView*)pView;
+	if (!pOCCView)
+		return;
+
+	return pOCCView->ViewPan(iPanningX, iPanningY);
+}
+
+extern "C" void PASCAL EXPORT ViewZoom(void* pView, int iMouseX, int iMouseY, double dZoomFactor)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	COCCView* pOCCView = (COCCView*)pView;
+	if (!pOCCView)
+		return;
+
+	return pOCCView->ViewZoom(iMouseX, iMouseY, dZoomFactor);
+}
+
+// Model
+extern "C" void* PASCAL EXPORT ReadIges(void* pView, const char* pcFileName)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	COCCView* pOCCView = (COCCView*)pView;
+	if (!pOCCView || !pcFileName)
+		return NULL;
+
+	return pOCCView->ReadIges(pcFileName);
+}
+
+extern "C" void* PASCAL EXPORT ReadStep(void* pView, const char* pcFileName)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	COCCView* pOCCView = (COCCView*)pView;
+	if (!pOCCView || !pcFileName)
+		return NULL;
+
+	return pOCCView->ReadStep(pcFileName);
+}
+
+extern "C" void* PASCAL EXPORT ReadStl(void* pView, const char* pcFileName)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	COCCView* pOCCView = (COCCView*)pView;
+	if (!pOCCView || !pcFileName)
+		return NULL;
+
+	return pOCCView->ReadStl(pcFileName);
+}
+
+extern "C" void PASCAL EXPORT DeleteModel(void* pView, void* pModel)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	COCCView* pOCCView = (COCCView*)pView;
+	if (!pOCCView || !pModel)
+		return;
+
+	Handle(AIS_Shape) myAISHandle;
+	if (AIS_Shape* myAISPointer = dynamic_cast<AIS_Shape*>(static_cast<AIS_InteractiveObject*>(pModel)))
+		myAISHandle = myAISPointer;
+	pOCCView->DeleteModel(myAISHandle);
 }

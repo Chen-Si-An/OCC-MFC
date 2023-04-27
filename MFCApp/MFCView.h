@@ -43,6 +43,8 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	void* m_pOCCView;
+	int m_iCursorX;
+	int m_iCursorY;
 
 	void DrawScene3D();
 
@@ -54,7 +56,7 @@ public:
 	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
-	afx_msg void OnMouseHWheel(UINT nFlags, short zDelta, CPoint pt);
+	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 };
 
 #ifndef _DEBUG  // 對 MFCView.cpp 中的版本進行偵錯

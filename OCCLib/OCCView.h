@@ -1,5 +1,6 @@
 #pragma once
 
+// Open Cascade includes
 #include <OpenGl_GraphicDriver.hxx>
 #include <V3d_Viewer.hxx>
 #include <V3d_View.hxx>
@@ -8,44 +9,71 @@
 
 #include <Geom_Line.hxx>
 #include <Geom_Plane.hxx>
-
 #include <GeomAPI_IntCS.hxx>
 
 #include <TopoDS_Edge.hxx>
 #include <TopoDS_Face.hxx>
-
 #include <AIS_Shape.hxx>
 
+#include <BRep_Builder.hxx>
 #include <BRepBuilderAPI_MakeEdge.hxx>
 #include <BRepBuilderAPI_MakeFace.hxx>
+
+#include <IGESControl_Reader.hxx>
+#include <STEPControl_Reader.hxx>
+#include <RWStl.hxx>
+
+// Standard includes
+#include <vector>
+#include <algorithm>
+using namespace std;
 
 class COCCView
 {
 public:
-	//Create the view
+	// Create the view
 	Handle(Graphic3d_GraphicDriver) m_hGraphicDriver;
 	Handle(V3d_Viewer) m_hViewer;
 	Handle(V3d_View) m_hView;
 	Handle(AIS_InteractiveContext) m_hContext;
 	Handle(WNT_Window) m_hWindow;
 
-	//Draw the background
+	// Draw the background
 	Handle(AIS_Shape) m_hAISAxis[3];
 	Handle(AIS_Shape) m_hAISHorzPlane;
+
+	// Manipulate the camera
+	gp_Pnt m_pntRotCenter;
+	gp_Dir m_dirRotAxis;
+
+	// Model
+	vector<Handle(AIS_Shape)> m_ayAISShape;
 
 public:
 	COCCView();
 	virtual ~COCCView();
 	
-	//Create the view
+	// Create the view
 	void CreateContext();
 	void SetWindow(HWND hwnd);
 	void EraseAllView();
 	void Resize();
 	void UpdateCurrentViewer();
 
-	//Draw the background
+	// Draw the background
 	void DrawCoordSys();
 	void DrawHorzPlane();
+
+	// Manipulate the camera
+	void ViewStartRotation(gp_Pnt pntCenter, Standard_Integer iMouseX, Standard_Integer iMouseY);
+	void ViewRotation(Standard_Integer iMouseX, Standard_Integer iMouseY);
+	void ViewPan(Standard_Integer iPanningX, Standard_Integer iPanningY);
+	void ViewZoom(Standard_Integer iMouseX, Standard_Integer iMouseY, Standard_Real rZoomFactor);
+
+	// Model
+	void* ReadIges(const char* pcFileName);
+	void* ReadStep(const char* pcFileName);
+	void* ReadStl(const char* pcFileName);
+	void DeleteModel(Handle(AIS_Shape) hAISShape);
 };
 

@@ -13,3 +13,11 @@ EXPORTS
     UpdateCurrentViewer;
     DrawCoordSys;
     DrawHorzPlane;
+    ViewStartRotation;
+    ViewRotation;
+    ViewPan;
+    ViewZoom;
+    ReadIges;
+    ReadStep;
+    ReadStl;
+    DeleteModel;

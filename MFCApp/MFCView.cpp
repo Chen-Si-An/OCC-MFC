@@ -39,7 +39,7 @@ BEGIN_MESSAGE_MAP(CMFCView, CView)
 	ON_WM_RBUTTONDOWN()
 	ON_WM_RBUTTONUP()
 	ON_WM_MOUSEMOVE()
-	ON_WM_MOUSEHWHEEL()
+	ON_WM_MOUSEWHEEL()
 END_MESSAGE_MAP()
 
 // CMFCView 建構/解構
@@ -76,6 +76,9 @@ void CMFCView::OnInitialUpdate()
 	{
 		g_ExtDll.CreateContext(m_pOCCView);
 		g_ExtDll.SetWindow(m_pOCCView, m_hWnd);
+
+		void* pModel = g_ExtDll.ReadIges(m_pOCCView, "D:\\Data\\iges\\bottle.iges");
+		g_ExtDll.DeleteModel(m_pOCCView, pModel);
 	}
 }
 
@@ -167,6 +170,8 @@ void CMFCView::OnSize(UINT nType, int cx, int cy)
 void CMFCView::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	// TODO: 在此加入您的訊息處理常式程式碼和 (或) 呼叫預設值
+	m_iCursorX = point.x;
+	m_iCursorY = point.y;
 
 	CView::OnLButtonDown(nFlags, point);
 }
@@ -183,6 +188,8 @@ void CMFCView::OnLButtonUp(UINT nFlags, CPoint point)
 void CMFCView::OnMButtonDown(UINT nFlags, CPoint point)
 {
 	// TODO: 在此加入您的訊息處理常式程式碼和 (或) 呼叫預設值
+	m_iCursorX = point.x;
+	m_iCursorY = point.y;
 
 	CView::OnMButtonDown(nFlags, point);
 }
@@ -199,6 +206,16 @@ void CMFCView::OnMButtonUp(UINT nFlags, CPoint point)
 void CMFCView::OnRButtonDown(UINT nFlags, CPoint point)
 {
 	// TODO: 在此加入您的訊息處理常式程式碼和 (或) 呼叫預設值
+	m_iCursorX = point.x;
+	m_iCursorY = point.y;
+
+	if (nFlags & MK_LBUTTON)
+		;
+	else
+	{
+		double dCenter[3] = { 0., 0., 0. };
+		g_ExtDll.ViewStartRotation(m_pOCCView, dCenter, point.x, point.y);
+	}
 
 	CView::OnRButtonDown(nFlags, point);
 }
@@ -215,16 +232,41 @@ void CMFCView::OnRButtonUp(UINT nFlags, CPoint point)
 void CMFCView::OnMouseMove(UINT nFlags, CPoint point)
 {
 	// TODO: 在此加入您的訊息處理常式程式碼和 (或) 呼叫預設值
+	if (nFlags & MK_LBUTTON)
+		;
+	else if (nFlags & MK_MBUTTON)
+	{
+		int iPanningX = point.x - m_iCursorX;
+		int iPanningY = -(point.y - m_iCursorY);
+		m_iCursorX = point.x;
+		m_iCursorY = point.y;
+		g_ExtDll.ViewPan(m_pOCCView, iPanningX, iPanningY);
+	}
+	else if (nFlags & MK_RBUTTON)
+		g_ExtDll.ViewRotation(m_pOCCView, point.x, point.y);
 
 	CView::OnMouseMove(nFlags, point);
 }
 
 
-void CMFCView::OnMouseHWheel(UINT nFlags, short zDelta, CPoint pt)
+BOOL CMFCView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 {
-	// 此功能需要 Windows Vista (含) 以上版本。
-	// 符號 _WIN32_WINNT 必須 >= 0x0600。
 	// TODO: 在此加入您的訊息處理常式程式碼和 (或) 呼叫預設值
+	CPoint ptClient;
+	ScreenToClient(&ptClient);
+	ptClient += pt;
 
-	CView::OnMouseHWheel(nFlags, zDelta, pt);
+	double dStep = zDelta / 120. / 20.;
+	double dZoomFactor = 0.;
+	if (zDelta > 0.)
+		dZoomFactor = 1. + dStep;
+	else
+		dZoomFactor = 1. / (1. - dStep);
+
+	if (dZoomFactor > 0.)
+		g_ExtDll.ViewZoom(m_pOCCView, ptClient.x, ptClient.y, dZoomFactor);
+	else
+		ASSERT(0);
+
+	return CView::OnMouseWheel(nFlags, zDelta, pt);
 }

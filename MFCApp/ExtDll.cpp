@@ -18,6 +18,18 @@ CExtDll::CExtDll()
 	//Draw the background
 	m_DrawCoordSys = NULL;
 	m_DrawHorzPlane = NULL;
+	
+	//Manipulate the camera
+	m_ViewStartRotation = NULL;
+	m_ViewRotation = NULL;
+	m_ViewPan = NULL;
+	m_ViewZoom = NULL;
+
+	// Model
+	m_ReadIges = NULL;
+	m_ReadStep = NULL;
+	m_ReadStl = NULL;
+	m_DeleteModel = NULL;
 }
 
 CExtDll::~CExtDll()
@@ -96,6 +108,64 @@ void CExtDll::LoadDriver()
 
 	m_DrawHorzPlane = (DRAW_HORZ_PLANE)GetProcAddress(m_hDriver, "DrawHorzPlane");
 	if (!m_DrawHorzPlane)
+	{
+		AfxMessageBox(_T("GetProcAddress Failed"));
+		return;
+	}
+
+	//Manipulate the camera
+	m_ViewStartRotation = (VIEW_START_ROTATION)GetProcAddress(m_hDriver, "ViewStartRotation");
+	if (!m_ViewStartRotation)
+	{
+		AfxMessageBox(_T("GetProcAddress Failed"));
+		return;
+	}
+
+	m_ViewRotation = (VIEW_ROTATION)GetProcAddress(m_hDriver, "ViewRotation");
+	if (!m_ViewRotation)
+	{
+		AfxMessageBox(_T("GetProcAddress Failed"));
+		return;
+	}
+
+	m_ViewPan = (VIEW_PAN)GetProcAddress(m_hDriver, "ViewPan");
+	if (!m_ViewPan)
+	{
+		AfxMessageBox(_T("GetProcAddress Failed"));
+		return;
+	}
+
+	m_ViewZoom = (VIEW_ZOOM)GetProcAddress(m_hDriver, "ViewZoom");
+	if (!m_ViewZoom)
+	{
+		AfxMessageBox(_T("GetProcAddress Failed"));
+		return;
+	}
+
+	// Model
+	m_ReadIges = (READ_IGES)GetProcAddress(m_hDriver, "ReadIges");
+	if (!m_ReadIges)
+	{
+		AfxMessageBox(_T("GetProcAddress Failed"));
+		return;
+	}
+
+	m_ReadStep = (READ_STEP)GetProcAddress(m_hDriver, "ReadStep");
+	if (!m_ReadStep)
+	{
+		AfxMessageBox(_T("GetProcAddress Failed"));
+		return;
+	}
+
+	m_ReadStl = (READ_STL)GetProcAddress(m_hDriver, "ReadStl");
+	if (!m_ReadStl)
+	{
+		AfxMessageBox(_T("GetProcAddress Failed"));
+		return;
+	}
+
+	m_DeleteModel = (DELETE_MODEL)GetProcAddress(m_hDriver, "DeleteModel");
+	if (!m_DeleteModel)
 	{
 		AfxMessageBox(_T("GetProcAddress Failed"));
 		return;
@@ -181,4 +251,85 @@ void CExtDll::DrawHorzPlane(void* pView)
 	if (!pView)
 		return;
 	m_DrawHorzPlane(pView);
+}
+
+//Manipulate the camera
+void CExtDll::ViewStartRotation(void* pView, double dCenter[3], int iMouseX, int iMouseY)
+{
+	if (!m_ViewStartRotation)
+		return;
+	if (!pView)
+		return;
+	m_ViewStartRotation(pView, dCenter, iMouseX, iMouseY);
+}
+
+void CExtDll::ViewRotation(void* pView, int iMouseX, int iMouseY)
+{
+	if (!m_ViewRotation)
+		return;
+	if (!pView)
+		return;
+	m_ViewRotation(pView, iMouseX, iMouseY);
+}
+
+void CExtDll::ViewPan(void* pView, int iPanningX, int iPanningY)
+{
+	if (!m_ViewPan)
+		return;
+	if (!pView)
+		return;
+	m_ViewPan(pView, iPanningX, iPanningY);
+}
+
+void CExtDll::ViewZoom(void* pView, int iMouseX, int iMouseY, double dZoomFactor)
+{
+	if (!m_ViewZoom)
+		return;
+	if (!pView)
+		return;
+	m_ViewZoom(pView, iMouseX, iMouseY, dZoomFactor);
+}
+
+void* CExtDll::ReadIges(void *pView, const char* pFileName)
+{
+	if (!m_ReadIges)
+		return NULL;
+	if (!pView)
+		return NULL;
+	if (!pFileName)
+		return NULL;
+	return m_ReadIges(pView, pFileName);
+}
+
+void* CExtDll::ReadStep(void* pView, const char* pFileName)
+{
+	if (!m_ReadStep)
+		return NULL;
+	if (!pView)
+		return NULL;
+	if (!pFileName)
+		return NULL;
+	return m_ReadStep(pView, pFileName);
+}
+
+void* CExtDll::ReadStl(void* pView, const char* pFileName)
+{
+	if (!m_ReadStl)
+		return NULL;
+	if (!pView)
+		return NULL;
+	if (!pFileName)
+		return NULL;
+	return m_ReadStl(pView, pFileName);
+}
+
+void CExtDll::DeleteModel(void* pView, void* pModel)
+{
+	if (!m_DeleteModel)
+		return;
+	if (!pView)
+		return;
+	if (!pModel)
+		return;
+	m_DeleteModel(pView, pModel);
 }

@@ -4,65 +4,33 @@
 #define COORD_SYS_LENGTH 10000.0
 #define COORD_SYS_WIDTH	3.0
 
-Standard_Boolean ConvertClickToPoint(Standard_Integer iMouseX, Standard_Integer iMouseY, gp_Pln plnInt, Handle(V3d_View) hView, gp_Pnt& pntResult)
-{
-	Standard_Real rEyeX, rEyeY, rEyeZ;
-	hView->Eye(rEyeX, rEyeY, rEyeZ);
-	gp_Pnt pntEye(rEyeX, rEyeY, rEyeZ);
-
-	Standard_Real rProjX, rProjY, rProjZ;
-	hView->Proj(rProjX, rProjY, rProjZ);
-
-	Standard_Real rFarX, rFarY, rFarZ;
-	hView->Convert(iMouseX, iMouseY, rFarX, rFarY, rFarZ);
-	gp_Pnt pntFar(rFarX, rFarY, rFarZ);
-
-	Handle(Geom_Line) pGeomLine;
-
-	switch (hView->Type())
-	{
-	case V3d_ORTHOGRAPHIC:
-		pGeomLine = new Geom_Line(pntFar, gp_Dir(rProjX, rProjY, rProjZ));
-		break;
-	case V3d_PERSPECTIVE:
-		pGeomLine = new Geom_Line(pntEye, gp_Dir(gp_Vec(pntEye, pntFar)));
-		break;
-	default:
-		return Standard_False;
-	}
-
-	Handle(Geom_Plane) pGeomPlane = new Geom_Plane(plnInt);
-	GeomAPI_IntCS intCS(pGeomLine, pGeomPlane);
-	if (intCS.IsDone() && intCS.NbPoints() == 1)
-	{
-		pntResult = intCS.Point(1);
-		return Standard_True;
-	}
-	else
-		return Standard_False;
-}
+#define DIST_RATIO 0.32
 
 
 COCCView::COCCView()
 {
-	//Create the view
+	// Create the view
 	m_hGraphicDriver.Nullify();
 	m_hViewer.Nullify();
 	m_hView.Nullify();
 	m_hContext.Nullify();
 	m_hWindow.Nullify();
 
-	//Draw the background
+	// Draw the background
 	for (int i = 0; i < 3; i++)
 		m_hAISAxis[i].Nullify();
 }
 
 COCCView::~COCCView()
 {
+	// Remove the view
 	if (!m_hView.IsNull())
 		m_hView->Remove();
 	if (!m_hViewer.IsNull())
 		m_hViewer->Remove();
+
+	// Remove the array of model
+	vector<Handle(AIS_Shape)>().swap(m_ayAISShape);
 }
 
 void COCCView::CreateContext()
@@ -184,4 +152,266 @@ void COCCView::DrawHorzPlane()
 
 	m_hContext->Display(m_hAISHorzPlane, Standard_False);
 	m_hAISHorzPlane->SetInfiniteState(Standard_True);
+}
+
+gp_Pln GetNearPlane(Handle(V3d_View) hView, gp_Pnt pntCenter)
+{
+	Standard_Real rEyeX, rEyeY, rEyeZ;
+	hView->Eye(rEyeX, rEyeY, rEyeZ);
+	gp_Pnt pntEye(rEyeX, rEyeY, rEyeZ);
+
+	Standard_Real rProjX, rProjY, rProjZ;
+	hView->Proj(rProjX, rProjY, rProjZ);
+	gp_Dir dirProj(rProjX, rProjY, rProjZ);
+
+	gp_Vec vecView(pntCenter, pntEye);
+	Standard_Real dDist = vecView.Magnitude() * DIST_RATIO;
+
+	gp_Pnt pntNear;
+	pntNear.SetX(pntCenter.X() + dirProj.X() * dDist);
+	pntNear.SetY(pntCenter.Y() + dirProj.Y() * dDist);
+	pntNear.SetZ(pntCenter.Z() + dirProj.Z() * dDist);
+
+	return gp_Pln(pntNear, dirProj);
+}
+
+Standard_Boolean ConvertClickToPoint(Standard_Integer iMouseX, Standard_Integer iMouseY, gp_Pln plnInt, Handle(V3d_View) hView, gp_Pnt& pntResult)
+{
+	Standard_Real rEyeX, rEyeY, rEyeZ;
+	hView->Eye(rEyeX, rEyeY, rEyeZ);
+	gp_Pnt pntEye(rEyeX, rEyeY, rEyeZ);
+
+	Standard_Real rProjX, rProjY, rProjZ;
+	hView->Proj(rProjX, rProjY, rProjZ);
+
+	Standard_Real rFarX, rFarY, rFarZ;
+	hView->Convert(iMouseX, iMouseY, rFarX, rFarY, rFarZ);
+	gp_Pnt pntFar(rFarX, rFarY, rFarZ);
+
+	Handle(Geom_Line) pGeomLine;
+
+	switch (hView->Type())
+	{
+	case V3d_ORTHOGRAPHIC:
+		pGeomLine = new Geom_Line(pntFar, gp_Dir(rProjX, rProjY, rProjZ));
+		break;
+	case V3d_PERSPECTIVE:
+		pGeomLine = new Geom_Line(pntEye, gp_Dir(gp_Vec(pntEye, pntFar)));
+		break;
+	default:
+		return Standard_False;
+	}
+
+	Handle(Geom_Plane) pGeomPlane = new Geom_Plane(plnInt);
+	GeomAPI_IntCS intCS(pGeomLine, pGeomPlane);
+	if (intCS.IsDone() && intCS.NbPoints() == 1)
+	{
+		pntResult = intCS.Point(1);
+		return Standard_True;
+	}
+	else
+		return Standard_False;
+}
+
+void COCCView::ViewStartRotation(gp_Pnt pntCenter, Standard_Integer iMouseX, Standard_Integer iMouseY)
+{
+	gp_Pln plnNear = GetNearPlane(m_hView, pntCenter);
+	gp_Pnt pntCur;
+	if (ConvertClickToPoint(iMouseX, iMouseY, plnNear, m_hView, pntCur))
+	{
+		m_pntRotCenter = pntCenter;
+		m_dirRotAxis = gp_Dir(gp_Vec(pntCenter, pntCur));
+	}
+}
+
+void COCCView::ViewRotation(Standard_Integer iMouseX, Standard_Integer iMouseY)
+{
+	gp_Pln plnNear = GetNearPlane(m_hView, m_pntRotCenter);
+	gp_Pnt pntCur;
+	if (ConvertClickToPoint(iMouseX, iMouseY, plnNear, m_hView, pntCur))
+	{
+		gp_Dir dirCurAxis = gp_Dir(gp_Vec(m_pntRotCenter, pntCur));
+		if (!m_dirRotAxis.IsParallel(dirCurAxis, Precision::Confusion()))
+		{
+			gp_Dir dirRot = dirCurAxis.Crossed(m_dirRotAxis);
+			Standard_Real rAng = dirCurAxis.Angle(m_dirRotAxis);
+
+			m_hView->SetAxis(m_pntRotCenter.X(), m_pntRotCenter.Y(), m_pntRotCenter.Z(), 
+				dirRot.X(), dirRot.Y(), dirRot.Z());
+			m_hView->Rotate(rAng);
+		}
+	}
+}
+
+void COCCView::ViewPan(Standard_Integer iPanningX, Standard_Integer iPanningY)
+{
+	m_hView->Pan(iPanningX, iPanningY);
+}
+
+void COCCView::ViewZoom(Standard_Integer iMouseX, Standard_Integer iMouseY, Standard_Real rZoomFactor)
+{
+	// Calculate zoom coefficient
+	Standard_Real rZoomCoef = rZoomFactor;
+	if (m_hView->Type() == V3d_PERSPECTIVE)
+		if (rZoomCoef < 1.)
+		{
+			Standard_Real rDelta = 1 / rZoomCoef - 1;
+			rZoomCoef = (1 + rDelta) / (1 + 2 * rDelta);
+		}
+
+
+	// Calculate zoom point
+	Standard_Real rAtX, rAtY, rAtZ;
+	m_hView->At(rAtX, rAtY, rAtZ);
+	gp_Pnt pntAt(rAtX, rAtY, rAtZ);
+
+	Standard_Real rProjX, rProjY, rProjZ;
+	m_hView->Proj(rProjX, rProjY, rProjZ);
+	gp_Dir dirProj(rProjX, rProjY, rProjZ);
+
+	gp_Pln plnView(pntAt, dirProj);
+	gp_Pnt pntMouse;
+	ConvertClickToPoint(iMouseX, iMouseY, plnView, m_hView, pntMouse);
+	gp_Vec vecMouse(pntAt, pntMouse);
+
+
+	// Calculate panning distance
+	gp_Pnt pntOrg;
+	ConvertClickToPoint(0, 0, plnView, m_hView, pntOrg);
+	gp_Pnt pntX;
+	ConvertClickToPoint(1, 0, plnView, m_hView, pntX);
+	gp_Pnt pntY;
+	ConvertClickToPoint(0, 1, plnView, m_hView, pntY);
+	gp_Dir dirX(gp_Vec(pntOrg, pntX));
+	gp_Dir dirY(gp_Vec(pntY, pntOrg));
+
+	Standard_Real rDX = vecMouse.Dot(dirX);
+	Standard_Real rDY = vecMouse.Dot(dirY);
+
+	Standard_Real rPixel2MM = m_hView->Convert(1);
+	Standard_Integer iDX = (Standard_Integer)Round(rDX / rPixel2MM);
+	Standard_Integer iDY = (Standard_Integer)Round(rDY / rPixel2MM);
+
+	Standard_Real rPanningX = iDX * rPixel2MM * (1. / rZoomCoef - 1.);
+	Standard_Real rPanningY = iDY * rPixel2MM * (1. / rZoomCoef - 1.);
+
+
+	// Zoom
+	Standard_Boolean bOldUpdate = m_hView->SetImmediateUpdate(Standard_False);
+
+	Standard_Real rOldDepth = m_hView->Depth();
+	m_hView->Panning(rPanningX, rPanningY);
+	m_hView->SetZoom(rZoomCoef);
+
+	Standard_Real rOffset = m_hView->Depth() - rOldDepth;
+	m_hView->At(rAtX, rAtY, rAtZ);
+	rAtX += rOffset * rProjX;
+	rAtY += rOffset * rProjY;
+	rAtZ += rOffset * rProjZ;
+	m_hView->SetAt(rAtX, rAtY, rAtZ);
+
+	m_hView->SetImmediateUpdate(bOldUpdate);
+
+
+	// Update
+	m_hContext->UpdateCurrentViewer();
+}
+
+void* COCCView::ReadIges(const char* pcFileName)
+{
+	IGESControl_Reader igesReader;
+	TCollection_AsciiString ascFileName(pcFileName);
+	IFSelect_ReturnStatus status = igesReader.ReadFile(ascFileName.ToCString());
+	if (status != IFSelect_RetDone)
+		return NULL;
+
+	// Root transfers
+	igesReader.TransferRoots();
+
+	// Collect result entities
+	TopoDS_Shape shpLoad = igesReader.OneShape();
+	if (shpLoad.IsNull())
+		return NULL;
+
+	Handle (AIS_Shape) hAISShape = new AIS_Shape(shpLoad);
+	m_ayAISShape.push_back(hAISShape);
+
+	return (Standard_Address)hAISShape.operator->();
+}
+
+void* COCCView::ReadStep(const char* pcFileName)
+{
+	STEPControl_Reader stepReader;
+	TCollection_AsciiString ascFileName(pcFileName);
+	IFSelect_ReturnStatus status = stepReader.ReadFile(ascFileName.ToCString());
+	if (status != IFSelect_RetDone)
+		return NULL;
+
+	// Root transfers
+	stepReader.TransferRoots();
+
+	// Collect result entities
+	TopoDS_Shape shpLoad = stepReader.OneShape();
+	if (shpLoad.IsNull())
+		return NULL;
+
+	Handle (AIS_Shape) hAISShape = new AIS_Shape(shpLoad);
+	m_ayAISShape.push_back(hAISShape);
+
+	return (Standard_Address)hAISShape.operator->();
+}
+
+Handle(Poly_Triangulation) RegenNode(Handle(Poly_Triangulation) pMesh)
+{
+	if (pMesh.IsNull())
+		return NULL;
+
+	Standard_Integer iNbTriangles = pMesh->NbTriangles();
+	Handle(Poly_Triangulation) pNewMesh = new Poly_Triangulation(3 * iNbTriangles, iNbTriangles, Standard_False);
+
+#pragma omp parallel for
+	for (Standard_Integer i = 1; i <= iNbTriangles; i++)
+	{
+		Poly_Triangle triangle = pMesh->Triangle(i);
+
+		pNewMesh->SetNode(3 * i - 2, pMesh->Node(triangle.Value(1)));
+		pNewMesh->SetNode(3 * i - 1, pMesh->Node(triangle.Value(2)));
+		pNewMesh->SetNode(3 * i, pMesh->Node(triangle.Value(3)));
+
+		pNewMesh->SetTriangle(i, Poly_Triangle(3 * i - 2, 3 * i - 1, 3 * i));
+	}
+
+	return pNewMesh;
+}
+
+void* COCCView::ReadStl(const char* pcFileName)
+{
+	TCollection_AsciiString ascFileName(pcFileName);
+	Handle(Poly_Triangulation) pMesh = RWStl::ReadAscii(ascFileName);
+	if (pMesh.IsNull())
+		pMesh = RWStl::ReadBinary(ascFileName);
+	if (pMesh.IsNull())
+		return NULL;
+
+	Handle(Poly_Triangulation) pNewMesh = RegenNode(pMesh);
+	if (pNewMesh.IsNull())
+		return NULL;
+
+	TopoDS_Face faceSTL;
+	BRep_Builder builderTool;
+	builderTool.MakeFace(faceSTL, pNewMesh);
+	if (faceSTL.IsNull())
+		return NULL;
+
+	Handle (AIS_Shape) hAISShape = new AIS_Shape(faceSTL);
+	m_ayAISShape.push_back(hAISShape);
+
+	return (Standard_Address)hAISShape.operator->();
+}
+
+void COCCView::DeleteModel(Handle(AIS_Shape) hAISShape)
+{
+	vector<Handle(AIS_Shape)>::iterator it = find(m_ayAISShape.begin(), m_ayAISShape.end(), hAISShape);
+	if (it != m_ayAISShape.end())
+		m_ayAISShape.erase(it);
 }
