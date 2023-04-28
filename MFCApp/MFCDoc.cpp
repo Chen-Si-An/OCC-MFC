@@ -11,6 +11,7 @@
 #endif
 
 #include "MFCDoc.h"
+#include "ExtDll.h"
 
 #include <propkey.h>
 
@@ -18,11 +19,16 @@
 #define new DEBUG_NEW
 #endif
 
+extern CExtDll g_ExtDll;
+
 // CMFCDoc
 
 IMPLEMENT_DYNCREATE(CMFCDoc, CDocument)
 
 BEGIN_MESSAGE_MAP(CMFCDoc, CDocument)
+	ON_COMMAND(ID_BUTTON_IMPORT_IGES, OnButtonImportIges)
+	ON_COMMAND(ID_BUTTON_IMPORT_STEP, OnButtonImportStep)
+	ON_COMMAND(ID_BUTTON_IMPORT_STL, OnButtonImportStl)
 END_MESSAGE_MAP()
 
 
@@ -31,11 +37,21 @@ END_MESSAGE_MAP()
 CMFCDoc::CMFCDoc() noexcept
 {
 	// TODO: 在此加入一次建構程式碼
-
+	m_pOCCView = NULL;
 }
 
 CMFCDoc::~CMFCDoc()
 {
+	if (m_pOCCView)
+	{
+		int iSize = (int)m_vecModel.size();
+		for (int i = 0; i < iSize; i++)
+			g_ExtDll.DeleteModel(m_pOCCView, m_vecModel[i]);
+		vector<void*>().swap(m_vecModel);
+
+		g_ExtDll.DeleteView(m_pOCCView);
+		m_pOCCView = NULL;
+	}
 }
 
 BOOL CMFCDoc::OnNewDocument()
@@ -45,6 +61,7 @@ BOOL CMFCDoc::OnNewDocument()
 
 	// TODO: 在此加入重新初始化程式碼
 	// (SDI 文件會重用此文件)
+	m_pOCCView = g_ExtDll.NewView();
 
 	return TRUE;
 }
@@ -136,3 +153,43 @@ void CMFCDoc::Dump(CDumpContext& dc) const
 
 
 // CMFCDoc 命令
+
+
+void CMFCDoc::OnButtonImportIges()
+{
+	CFileDialog dlg(TRUE, _T("*.iges"), NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("IGES Files (*.iges)|*.iges||"), NULL);
+	if (dlg.DoModal() != IDOK)
+		return;
+
+	void* pModel = g_ExtDll.ReadIges(m_pOCCView, dlg.GetPathName());
+	if (pModel)
+		m_vecModel.push_back(pModel);
+
+	UpdateAllViews(NULL);
+}
+
+void CMFCDoc::OnButtonImportStep()
+{
+	CFileDialog dlg(TRUE, _T("*.step"), NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("STEP Files (*.step)|*.step||"), NULL);
+	if (dlg.DoModal() != IDOK)
+		return;
+
+	void* pModel = g_ExtDll.ReadStep(m_pOCCView, dlg.GetPathName());
+	if (pModel)
+		m_vecModel.push_back(pModel);
+
+	UpdateAllViews(NULL);
+}
+
+void CMFCDoc::OnButtonImportStl()
+{
+	CFileDialog dlg(TRUE, _T("*.stl"), NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("STL Files (*.stl)|*.stl||"), NULL);
+	if (dlg.DoModal() != IDOK)
+		return;
+
+	void* pModel = g_ExtDll.ReadStl(m_pOCCView, dlg.GetPathName());
+	if (pModel)
+		m_vecModel.push_back(pModel);
+
+	UpdateAllViews(NULL);
+}

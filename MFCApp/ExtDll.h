@@ -13,10 +13,12 @@ typedef void	(__stdcall* VIEW_START_ROTATION)(void *pView, double dCenter[3], in
 typedef void	(__stdcall* VIEW_ROTATION)(void *pView, int iMouseX, int iMouseY);
 typedef void	(__stdcall* VIEW_PAN)(void* pView, int iPanningX, int iPanningY);
 typedef void	(__stdcall* VIEW_ZOOM)(void* pView, int iMouseX, int iMouseY, double dZoomFactor);
-typedef void*	(__stdcall* READ_IGES)(void* pView, const char* pcFileName);
-typedef void*	(__stdcall* READ_STEP)(void* pView, const char* pcFileName);
-typedef void*   (__stdcall* READ_STL)(void* pView, const char* pcFileName);
-typedef void    (__stdcall* DELETE_MODEL)(void* pView, void* pModel);
+typedef void*	(__stdcall* READ_IGES)(void* pView, LPCTSTR pcFileName);
+typedef void*	(__stdcall* READ_STEP)(void* pView, LPCTSTR pcFileName);
+typedef void*   (__stdcall* READ_STL)(void* pView, LPCTSTR pcFileName);
+typedef void	(__stdcall* DELETE_MODEL)(void* pView, void* pModel);
+typedef void	(__stdcall* DRAW_MODEL)(void* pView, void* pModel);
+typedef void	(__stdcall* REMOVE_MODEL)(void* pView, void* pModel);
 
 
 class CExtDll
@@ -52,8 +54,11 @@ public:
 	READ_STEP		m_ReadStep;
 	READ_STL		m_ReadStl;
 	DELETE_MODEL	m_DeleteModel;
+	DRAW_MODEL		m_DrawModel;
+	REMOVE_MODEL	m_RemoveModel;
 
 	void LoadDriver();
+	void FreeDriver();
 	void* NewView();
 	void DeleteView(void *pView);
 
@@ -75,9 +80,11 @@ public:
 	void ViewZoom(void* pView, int iMouseX, int iMouseY, double dZoomFactor);
 
 	// Model
-	void* ReadIges(void* pView, const char* pcFileName);
-	void* ReadStep(void* pView, const char* pcFileName);
-	void* ReadStl(void* pView, const char* pcFileName);
+	void* ReadIges(void* pView, LPCTSTR pcFileName);
+	void* ReadStep(void* pView, LPCTSTR pcFileName);
+	void* ReadStl(void* pView, LPCTSTR pcFileName);
 	void DeleteModel(void* pView, void* pModel);
+	void DrawModel(void* pView, void* pModel);
+	void RemoveModel(void* pView, void* pModel);
 };
 

@@ -30,12 +30,13 @@ CExtDll::CExtDll()
 	m_ReadStep = NULL;
 	m_ReadStl = NULL;
 	m_DeleteModel = NULL;
+	m_DrawModel = NULL;
+	m_RemoveModel = NULL;
 }
 
 CExtDll::~CExtDll()
 {
-	if (m_hDriver)
-		FreeLibrary(m_hDriver);
+	//FreeDriver();
 }
 
 void CExtDll::LoadDriver()
@@ -170,6 +171,26 @@ void CExtDll::LoadDriver()
 		AfxMessageBox(_T("GetProcAddress Failed"));
 		return;
 	}
+
+	m_DrawModel = (DRAW_MODEL)GetProcAddress(m_hDriver, "DisplayModel");
+	if (!m_DrawModel)
+	{
+		AfxMessageBox(_T("GetProcAddress Failed"));
+		return;
+	}
+
+	m_RemoveModel = (REMOVE_MODEL)GetProcAddress(m_hDriver, "RemoveModel");
+	if (!m_RemoveModel)
+	{
+		AfxMessageBox(_T("GetProcAddress Failed"));
+		return;
+	}
+}
+
+void CExtDll::FreeDriver()
+{
+	if (m_hDriver)
+		FreeLibrary(m_hDriver);
 }
 
 void* CExtDll::NewView()
@@ -290,7 +311,7 @@ void CExtDll::ViewZoom(void* pView, int iMouseX, int iMouseY, double dZoomFactor
 	m_ViewZoom(pView, iMouseX, iMouseY, dZoomFactor);
 }
 
-void* CExtDll::ReadIges(void *pView, const char* pFileName)
+void* CExtDll::ReadIges(void *pView, LPCTSTR pFileName)
 {
 	if (!m_ReadIges)
 		return NULL;
@@ -301,7 +322,7 @@ void* CExtDll::ReadIges(void *pView, const char* pFileName)
 	return m_ReadIges(pView, pFileName);
 }
 
-void* CExtDll::ReadStep(void* pView, const char* pFileName)
+void* CExtDll::ReadStep(void* pView, LPCTSTR pFileName)
 {
 	if (!m_ReadStep)
 		return NULL;
@@ -312,7 +333,7 @@ void* CExtDll::ReadStep(void* pView, const char* pFileName)
 	return m_ReadStep(pView, pFileName);
 }
 
-void* CExtDll::ReadStl(void* pView, const char* pFileName)
+void* CExtDll::ReadStl(void* pView, LPCTSTR pFileName)
 {
 	if (!m_ReadStl)
 		return NULL;
@@ -332,4 +353,26 @@ void CExtDll::DeleteModel(void* pView, void* pModel)
 	if (!pModel)
 		return;
 	m_DeleteModel(pView, pModel);
+}
+
+void CExtDll::DrawModel(void* pView, void* pModel)
+{
+	if (!m_DrawModel)
+		return;
+	if (!pView)
+		return;
+	if (!pModel)
+		return;
+	m_DrawModel(pView, pModel);
+}
+
+void CExtDll::RemoveModel(void* pView, void* pModel)
+{
+	if (!m_RemoveModel)
+		return;
+	if (!pView)
+		return;
+	if (!pModel)
+		return;
+	m_RemoveModel(pView, pModel);
 }

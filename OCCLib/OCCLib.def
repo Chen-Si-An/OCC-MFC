@@ -21,3 +21,5 @@ EXPORTS
     ReadStep;
     ReadStl;
     DeleteModel;
+    DisplayModel;
+    RemoveModel;

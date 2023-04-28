@@ -47,7 +47,7 @@ public:
 	gp_Dir m_dirRotAxis;
 
 	// Model
-	vector<Handle(AIS_Shape)> m_ayAISShape;
+	vector<Handle(AIS_Shape)> m_vecAISModel;
 
 public:
 	COCCView();
@@ -71,9 +71,11 @@ public:
 	void ViewZoom(Standard_Integer iMouseX, Standard_Integer iMouseY, Standard_Real rZoomFactor);
 
 	// Model
-	void* ReadIges(const char* pcFileName);
-	void* ReadStep(const char* pcFileName);
-	void* ReadStl(const char* pcFileName);
+	void* ReadIges(LPCTSTR pcFileName);
+	void* ReadStep(LPCTSTR pcFileName);
+	void* ReadStl(LPCTSTR pcFileName);
 	void DeleteModel(Handle(AIS_Shape) hAISShape);
+	void DisplayModel(Handle(AIS_Shape) hAISShape);
+	void RemoveModel(Handle(AIS_Shape) hAISShape);
 };
 

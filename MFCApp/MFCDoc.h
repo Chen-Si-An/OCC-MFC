@@ -5,6 +5,9 @@
 
 #pragma once
 
+#include <vector>
+using namespace std;
+
 
 class CMFCDoc : public CDocument
 {
@@ -39,10 +42,16 @@ protected:
 
 // 產生的訊息對應函式
 protected:
+	afx_msg void OnButtonImportIges();
+	afx_msg void OnButtonImportStep();
+	afx_msg void OnButtonImportStl();
 	DECLARE_MESSAGE_MAP()
 
 #ifdef SHARED_HANDLERS
 	// 為搜尋處理常式設定搜尋內容的 Helper 函式
 	void SetSearchContent(const CString& value);
 #endif // SHARED_HANDLERS
+public:
+	void* m_pOCCView;
+	vector<void*> m_vecModel;
 };

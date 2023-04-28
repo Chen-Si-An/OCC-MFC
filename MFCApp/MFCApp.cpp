@@ -139,6 +139,8 @@ int CMFCApp::ExitInstance()
 	// TODO: 處理其他您已經加入的資源
 	AfxOleTerm(FALSE);
 
+	//g_ExtDll.FreeDriver();
+
 	return CWinApp::ExitInstance();
 }
 

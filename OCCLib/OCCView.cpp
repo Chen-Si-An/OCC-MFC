@@ -30,7 +30,10 @@ COCCView::~COCCView()
 		m_hViewer->Remove();
 
 	// Remove the array of model
-	vector<Handle(AIS_Shape)>().swap(m_ayAISShape);
+	for (vector<Handle(AIS_Shape)>::iterator it = m_vecAISModel.begin(); it != m_vecAISModel.end(); it++)
+		if (!(*it).IsNull())
+			m_hContext->Remove(*it, Standard_False);
+	vector<Handle(AIS_Shape)>().swap(m_vecAISModel);
 }
 
 void COCCView::CreateContext()
@@ -317,7 +320,7 @@ void COCCView::ViewZoom(Standard_Integer iMouseX, Standard_Integer iMouseY, Stan
 	m_hContext->UpdateCurrentViewer();
 }
 
-void* COCCView::ReadIges(const char* pcFileName)
+void* COCCView::ReadIges(LPCTSTR pcFileName)
 {
 	IGESControl_Reader igesReader;
 	TCollection_AsciiString ascFileName(pcFileName);
@@ -334,12 +337,13 @@ void* COCCView::ReadIges(const char* pcFileName)
 		return NULL;
 
 	Handle (AIS_Shape) hAISShape = new AIS_Shape(shpLoad);
-	m_ayAISShape.push_back(hAISShape);
+	m_vecAISModel.push_back(hAISShape);
 
+	
 	return (Standard_Address)hAISShape.operator->();
 }
 
-void* COCCView::ReadStep(const char* pcFileName)
+void* COCCView::ReadStep(LPCTSTR pcFileName)
 {
 	STEPControl_Reader stepReader;
 	TCollection_AsciiString ascFileName(pcFileName);
@@ -356,7 +360,7 @@ void* COCCView::ReadStep(const char* pcFileName)
 		return NULL;
 
 	Handle (AIS_Shape) hAISShape = new AIS_Shape(shpLoad);
-	m_ayAISShape.push_back(hAISShape);
+	m_vecAISModel.push_back(hAISShape);
 
 	return (Standard_Address)hAISShape.operator->();
 }
@@ -384,7 +388,7 @@ Handle(Poly_Triangulation) RegenNode(Handle(Poly_Triangulation) pMesh)
 	return pNewMesh;
 }
 
-void* COCCView::ReadStl(const char* pcFileName)
+void* COCCView::ReadStl(LPCTSTR pcFileName)
 {
 	TCollection_AsciiString ascFileName(pcFileName);
 	Handle(Poly_Triangulation) pMesh = RWStl::ReadAscii(ascFileName);
@@ -404,14 +408,37 @@ void* COCCView::ReadStl(const char* pcFileName)
 		return NULL;
 
 	Handle (AIS_Shape) hAISShape = new AIS_Shape(faceSTL);
-	m_ayAISShape.push_back(hAISShape);
+	m_vecAISModel.push_back(hAISShape);
 
 	return (Standard_Address)hAISShape.operator->();
 }
 
 void COCCView::DeleteModel(Handle(AIS_Shape) hAISShape)
 {
-	vector<Handle(AIS_Shape)>::iterator it = find(m_ayAISShape.begin(), m_ayAISShape.end(), hAISShape);
-	if (it != m_ayAISShape.end())
-		m_ayAISShape.erase(it);
+	if (hAISShape.IsNull())
+		return;
+
+	m_hContext->Remove(hAISShape, Standard_False);
+	m_vecAISModel.erase(remove(m_vecAISModel.begin(), m_vecAISModel.end(), hAISShape), m_vecAISModel.end());
+}
+
+void COCCView::DisplayModel(Handle(AIS_Shape) hAISShape)
+{
+	if (hAISShape.IsNull())
+		return;
+
+	m_hContext->Display(hAISShape, Standard_False);
+
+	Handle(Prs3d_Drawer) hAttrib = hAISShape->Attributes();
+	Handle(Prs3d_ShadingAspect) hShadingAsp = hAttrib->ShadingAspect();
+	hShadingAsp->SetColor(Quantity_Color(0.8, 0.8, 0., Quantity_TOC_RGB), Aspect_TOFM_FRONT_SIDE);
+	hShadingAsp->SetColor(Quantity_Color(0.3, 0.3, 0.3, Quantity_TOC_RGB), Aspect_TOFM_BACK_SIDE);
+}
+
+void COCCView::RemoveModel(Handle(AIS_Shape) hAISShape)
+{
+	if (hAISShape.IsNull())
+		return;
+
+	m_hContext->Remove(hAISShape, Standard_False);
 }

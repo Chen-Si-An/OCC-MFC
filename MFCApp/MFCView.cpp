@@ -46,16 +46,12 @@ END_MESSAGE_MAP()
 
 CMFCView::CMFCView() noexcept
 {
-	m_pOCCView = NULL;
+	m_iCursorX = 0;
+	m_iCursorY = 0;
 }
 
 CMFCView::~CMFCView()
 {
-	if (m_pOCCView)
-	{
-		g_ExtDll.DeleteView(m_pOCCView);
-		m_pOCCView = NULL;
-	}
 }
 
 BOOL CMFCView::PreCreateWindow(CREATESTRUCT& cs)
@@ -71,14 +67,11 @@ void CMFCView::OnInitialUpdate()
 	CView::OnInitialUpdate();
 
 	// TODO: 在此加入特定的程式碼和 (或) 呼叫基底類別
-	m_pOCCView = g_ExtDll.NewView();
-	if (m_pOCCView)
+	CMFCDoc* pDoc = GetDocument();
+	if (pDoc && pDoc->m_pOCCView)
 	{
-		g_ExtDll.CreateContext(m_pOCCView);
-		g_ExtDll.SetWindow(m_pOCCView, m_hWnd);
-
-		void* pModel = g_ExtDll.ReadIges(m_pOCCView, "D:\\Data\\iges\\bottle.iges");
-		g_ExtDll.DeleteModel(m_pOCCView, pModel);
+		g_ExtDll.CreateContext(pDoc->m_pOCCView);
+		g_ExtDll.SetWindow(pDoc->m_pOCCView, m_hWnd);
 	}
 }
 
@@ -92,11 +85,11 @@ void CMFCView::OnDraw(CDC* /*pDC*/)
 		return;
 
 	// TODO: 在此加入原生資料的描繪程式碼
-	if (m_pOCCView)
+	if (pDoc->m_pOCCView)
 	{
 		DrawScene3D();
 
-		g_ExtDll.UpdateCurrentViewer(m_pOCCView);
+		g_ExtDll.UpdateCurrentViewer(pDoc->m_pOCCView);
 	}
 }
 
@@ -146,14 +139,20 @@ CMFCDoc* CMFCView::GetDocument() const // 內嵌非偵錯版本
 
 void CMFCView::DrawScene3D()
 {
-	if (!m_pOCCView)
+	CMFCDoc* pDoc = GetDocument();
+	if (!pDoc || !pDoc->m_pOCCView)
 		return;
 
-	g_ExtDll.EraseAllView(m_pOCCView);
+	g_ExtDll.EraseAllView(pDoc->m_pOCCView);
 
 	//Draw the background
-	g_ExtDll.DrawCoordSys(m_pOCCView);
-	g_ExtDll.DrawHorzPlane(m_pOCCView);
+	g_ExtDll.DrawCoordSys(pDoc->m_pOCCView);
+	g_ExtDll.DrawHorzPlane(pDoc->m_pOCCView);
+
+	//Draw the model
+	int iSize = (int)pDoc->m_vecModel.size();
+	for (int i = 0; i < iSize; i++)
+		g_ExtDll.DrawModel(pDoc->m_pOCCView, pDoc->m_vecModel[i]);
 }
 
 
@@ -162,8 +161,9 @@ void CMFCView::OnSize(UINT nType, int cx, int cy)
 	CView::OnSize(nType, cx, cy);
 
 	// TODO: 在此加入您的訊息處理常式程式碼
-	if (m_pOCCView)
-		g_ExtDll.Resize(m_pOCCView);
+	CMFCDoc* pDoc = GetDocument();
+	if (pDoc && pDoc->m_pOCCView)
+		g_ExtDll.Resize(pDoc->m_pOCCView);
 }
 
 
@@ -209,12 +209,16 @@ void CMFCView::OnRButtonDown(UINT nFlags, CPoint point)
 	m_iCursorX = point.x;
 	m_iCursorY = point.y;
 
-	if (nFlags & MK_LBUTTON)
-		;
-	else
+	CMFCDoc* pDoc = GetDocument();
+	if (pDoc && pDoc->m_pOCCView)
 	{
-		double dCenter[3] = { 0., 0., 0. };
-		g_ExtDll.ViewStartRotation(m_pOCCView, dCenter, point.x, point.y);
+		if (nFlags & MK_LBUTTON)
+			;
+		else
+		{
+			double dCenter[3] = { 0., 0., 0. };
+			g_ExtDll.ViewStartRotation(pDoc->m_pOCCView, dCenter, point.x, point.y);
+		}
 	}
 
 	CView::OnRButtonDown(nFlags, point);
@@ -232,18 +236,22 @@ void CMFCView::OnRButtonUp(UINT nFlags, CPoint point)
 void CMFCView::OnMouseMove(UINT nFlags, CPoint point)
 {
 	// TODO: 在此加入您的訊息處理常式程式碼和 (或) 呼叫預設值
-	if (nFlags & MK_LBUTTON)
-		;
-	else if (nFlags & MK_MBUTTON)
+	CMFCDoc* pDoc = GetDocument();
+	if (pDoc && pDoc->m_pOCCView)
 	{
-		int iPanningX = point.x - m_iCursorX;
-		int iPanningY = -(point.y - m_iCursorY);
-		m_iCursorX = point.x;
-		m_iCursorY = point.y;
-		g_ExtDll.ViewPan(m_pOCCView, iPanningX, iPanningY);
+		if (nFlags & MK_LBUTTON)
+			;
+		else if (nFlags & MK_MBUTTON)
+		{
+			int iPanningX = point.x - m_iCursorX;
+			int iPanningY = -(point.y - m_iCursorY);
+			m_iCursorX = point.x;
+			m_iCursorY = point.y;
+			g_ExtDll.ViewPan(pDoc->m_pOCCView, iPanningX, iPanningY);
+		}
+		else if (nFlags & MK_RBUTTON)
+			g_ExtDll.ViewRotation(pDoc->m_pOCCView, point.x, point.y);
 	}
-	else if (nFlags & MK_RBUTTON)
-		g_ExtDll.ViewRotation(m_pOCCView, point.x, point.y);
 
 	CView::OnMouseMove(nFlags, point);
 }
@@ -252,21 +260,25 @@ void CMFCView::OnMouseMove(UINT nFlags, CPoint point)
 BOOL CMFCView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 {
 	// TODO: 在此加入您的訊息處理常式程式碼和 (或) 呼叫預設值
-	CPoint ptClient;
-	ScreenToClient(&ptClient);
-	ptClient += pt;
+	CMFCDoc* pDoc = GetDocument();
+	if (pDoc && pDoc->m_pOCCView)
+	{
+		CPoint ptClient;
+		ScreenToClient(&ptClient);
+		ptClient += pt;
 
-	double dStep = zDelta / 120. / 20.;
-	double dZoomFactor = 0.;
-	if (zDelta > 0.)
-		dZoomFactor = 1. + dStep;
-	else
-		dZoomFactor = 1. / (1. - dStep);
+		double dStep = zDelta / 120. / 20.;
+		double dZoomFactor = 0.;
+		if (zDelta > 0.)
+			dZoomFactor = 1. + dStep;
+		else
+			dZoomFactor = 1. / (1. - dStep);
 
-	if (dZoomFactor > 0.)
-		g_ExtDll.ViewZoom(m_pOCCView, ptClient.x, ptClient.y, dZoomFactor);
-	else
-		ASSERT(0);
+		if (dZoomFactor > 0.)
+			g_ExtDll.ViewZoom(pDoc->m_pOCCView, ptClient.x, ptClient.y, dZoomFactor);
+		else
+			ASSERT(0);
+	}
 
 	return CView::OnMouseWheel(nFlags, zDelta, pt);
 }

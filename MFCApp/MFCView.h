@@ -42,7 +42,6 @@ protected:
 protected:
 	DECLARE_MESSAGE_MAP()
 public:
-	void* m_pOCCView;
 	int m_iCursorX;
 	int m_iCursorY;
 

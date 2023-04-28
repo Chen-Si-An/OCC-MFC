@@ -224,7 +224,7 @@ extern "C" void PASCAL EXPORT ViewZoom(void* pView, int iMouseX, int iMouseY, do
 }
 
 // Model
-extern "C" void* PASCAL EXPORT ReadIges(void* pView, const char* pcFileName)
+extern "C" void* PASCAL EXPORT ReadIges(void* pView, LPCTSTR pcFileName)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -235,7 +235,7 @@ extern "C" void* PASCAL EXPORT ReadIges(void* pView, const char* pcFileName)
 	return pOCCView->ReadIges(pcFileName);
 }
 
-extern "C" void* PASCAL EXPORT ReadStep(void* pView, const char* pcFileName)
+extern "C" void* PASCAL EXPORT ReadStep(void* pView, LPCTSTR pcFileName)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -246,7 +246,7 @@ extern "C" void* PASCAL EXPORT ReadStep(void* pView, const char* pcFileName)
 	return pOCCView->ReadStep(pcFileName);
 }
 
-extern "C" void* PASCAL EXPORT ReadStl(void* pView, const char* pcFileName)
+extern "C" void* PASCAL EXPORT ReadStl(void* pView, LPCTSTR pcFileName)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -257,6 +257,7 @@ extern "C" void* PASCAL EXPORT ReadStl(void* pView, const char* pcFileName)
 	return pOCCView->ReadStl(pcFileName);
 }
 
+// Delete Model
 extern "C" void PASCAL EXPORT DeleteModel(void* pView, void* pModel)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -265,8 +266,33 @@ extern "C" void PASCAL EXPORT DeleteModel(void* pView, void* pModel)
 	if (!pOCCView || !pModel)
 		return;
 
-	Handle(AIS_Shape) myAISHandle;
-	if (AIS_Shape* myAISPointer = dynamic_cast<AIS_Shape*>(static_cast<AIS_InteractiveObject*>(pModel)))
-		myAISHandle = myAISPointer;
-	pOCCView->DeleteModel(myAISHandle);
+	Handle(AIS_Shape) hAISShape = dynamic_cast<AIS_Shape*>(static_cast<AIS_InteractiveObject*>(pModel));
+	if (hAISShape)
+		pOCCView->DeleteModel(hAISShape);
+}
+
+extern "C" void PASCAL EXPORT DisplayModel(void* pView, void* pModel)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	COCCView* pOCCView = (COCCView*)pView;
+	if (!pOCCView || !pModel)
+		return;
+
+	Handle(AIS_Shape) hAISShape = dynamic_cast<AIS_Shape*>(static_cast<AIS_InteractiveObject*>(pModel));
+	if (hAISShape)
+		pOCCView->DisplayModel(hAISShape);
+}
+
+extern "C" void PASCAL EXPORT RemoveModel(void* pView, void* pModel)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	COCCView* pOCCView = (COCCView*)pView;
+	if (!pOCCView || !pModel)
+		return;
+
+	Handle(AIS_Shape) hAISShape = dynamic_cast<AIS_Shape*>(static_cast<AIS_InteractiveObject*>(pModel));
+	if (hAISShape)
+		pOCCView->RemoveModel(hAISShape);
 }
