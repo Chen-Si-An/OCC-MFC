@@ -134,7 +134,7 @@ void COCCView::DrawCoordSys()
 
 	for (int i = 0; i < 3; i++)
 	{
-		m_hContext->Display(m_hAISAxis[i], Standard_False);
+		m_hContext->Display(m_hAISAxis[i], AIS_Shaded, -1, Standard_False);
 		m_hAISAxis[i]->SetInfiniteState(Standard_True);
 	}
 }
@@ -153,53 +153,52 @@ void COCCView::DrawHorzPlane()
 		m_hAISHorzPlane->SetTransparency(0.5f);
 	}
 
-	m_hContext->Display(m_hAISHorzPlane, Standard_False);
+	m_hContext->Display(m_hAISHorzPlane, AIS_Shaded, -1, Standard_False);
 	m_hAISHorzPlane->SetInfiniteState(Standard_True);
 }
 
-gp_Pln GetNearPlane(Handle(V3d_View) hView, gp_Pnt pntCenter)
+gp_Pln GetNearPlane(Handle(V3d_View) hView, gp_Pnt ptCenter)
 {
 	Standard_Real rEyeX, rEyeY, rEyeZ;
 	hView->Eye(rEyeX, rEyeY, rEyeZ);
-	gp_Pnt pntEye(rEyeX, rEyeY, rEyeZ);
+	gp_Pnt ptEye(rEyeX, rEyeY, rEyeZ);
 
 	Standard_Real rProjX, rProjY, rProjZ;
 	hView->Proj(rProjX, rProjY, rProjZ);
 	gp_Dir dirProj(rProjX, rProjY, rProjZ);
 
-	gp_Vec vecView(pntCenter, pntEye);
+	gp_Vec vecView(ptCenter, ptEye);
 	Standard_Real dDist = vecView.Magnitude() * DIST_RATIO;
 
-	gp_Pnt pntNear;
-	pntNear.SetX(pntCenter.X() + dirProj.X() * dDist);
-	pntNear.SetY(pntCenter.Y() + dirProj.Y() * dDist);
-	pntNear.SetZ(pntCenter.Z() + dirProj.Z() * dDist);
+	gp_Pnt ptNear;
+	ptNear.SetX(ptCenter.X() + dirProj.X() * dDist);
+	ptNear.SetY(ptCenter.Y() + dirProj.Y() * dDist);
+	ptNear.SetZ(ptCenter.Z() + dirProj.Z() * dDist);
 
-	return gp_Pln(pntNear, dirProj);
+	return gp_Pln(ptNear, dirProj);
 }
 
-Standard_Boolean ConvertClickToPoint(Standard_Integer iMouseX, Standard_Integer iMouseY, gp_Pln plnInt, Handle(V3d_View) hView, gp_Pnt& pntResult)
+Standard_Boolean ConvertClickToPoint(Standard_Integer iMouseX, Standard_Integer iMouseY, gp_Pln plnInt, Handle(V3d_View) hView, gp_Pnt& ptResult)
 {
 	Standard_Real rEyeX, rEyeY, rEyeZ;
 	hView->Eye(rEyeX, rEyeY, rEyeZ);
-	gp_Pnt pntEye(rEyeX, rEyeY, rEyeZ);
+	gp_Pnt ptEye(rEyeX, rEyeY, rEyeZ);
 
 	Standard_Real rProjX, rProjY, rProjZ;
 	hView->Proj(rProjX, rProjY, rProjZ);
 
 	Standard_Real rFarX, rFarY, rFarZ;
 	hView->Convert(iMouseX, iMouseY, rFarX, rFarY, rFarZ);
-	gp_Pnt pntFar(rFarX, rFarY, rFarZ);
+	gp_Pnt ptFar(rFarX, rFarY, rFarZ);
 
 	Handle(Geom_Line) pGeomLine;
-
 	switch (hView->Type())
 	{
 	case V3d_ORTHOGRAPHIC:
-		pGeomLine = new Geom_Line(pntFar, gp_Dir(rProjX, rProjY, rProjZ));
+		pGeomLine = new Geom_Line(ptFar, gp_Dir(rProjX, rProjY, rProjZ));
 		break;
 	case V3d_PERSPECTIVE:
-		pGeomLine = new Geom_Line(pntEye, gp_Dir(gp_Vec(pntEye, pntFar)));
+		pGeomLine = new Geom_Line(ptEye, gp_Dir(gp_Vec(ptEye, ptFar)));
 		break;
 	default:
 		return Standard_False;
@@ -209,41 +208,24 @@ Standard_Boolean ConvertClickToPoint(Standard_Integer iMouseX, Standard_Integer 
 	GeomAPI_IntCS intCS(pGeomLine, pGeomPlane);
 	if (intCS.IsDone() && intCS.NbPoints() == 1)
 	{
-		pntResult = intCS.Point(1);
+		ptResult = intCS.Point(1);
 		return Standard_True;
 	}
 	else
 		return Standard_False;
 }
 
-void COCCView::ViewStartRotation(gp_Pnt pntCenter, Standard_Integer iMouseX, Standard_Integer iMouseY)
+Standard_Boolean COCCView::ViewConvert(Standard_Integer iMouseX, Standard_Integer iMouseY, gp_Pnt ptRef, gp_Pnt& ptResult)
 {
-	gp_Pln plnNear = GetNearPlane(m_hView, pntCenter);
-	gp_Pnt pntCur;
-	if (ConvertClickToPoint(iMouseX, iMouseY, plnNear, m_hView, pntCur))
-	{
-		m_pntRotCenter = pntCenter;
-		m_dirRotAxis = gp_Dir(gp_Vec(pntCenter, pntCur));
-	}
+	gp_Pln plnNear = GetNearPlane(m_hView, ptRef);
+	return ConvertClickToPoint(iMouseX, iMouseY, plnNear, m_hView, ptResult);
 }
 
-void COCCView::ViewRotation(Standard_Integer iMouseX, Standard_Integer iMouseY)
+void COCCView::ViewRotate(gp_Pnt ptCenter, gp_Dir dirAxis, Standard_Real dAngle)
 {
-	gp_Pln plnNear = GetNearPlane(m_hView, m_pntRotCenter);
-	gp_Pnt pntCur;
-	if (ConvertClickToPoint(iMouseX, iMouseY, plnNear, m_hView, pntCur))
-	{
-		gp_Dir dirCurAxis = gp_Dir(gp_Vec(m_pntRotCenter, pntCur));
-		if (!m_dirRotAxis.IsParallel(dirCurAxis, Precision::Confusion()))
-		{
-			gp_Dir dirRot = dirCurAxis.Crossed(m_dirRotAxis);
-			Standard_Real rAng = dirCurAxis.Angle(m_dirRotAxis);
-
-			m_hView->SetAxis(m_pntRotCenter.X(), m_pntRotCenter.Y(), m_pntRotCenter.Z(), 
-				dirRot.X(), dirRot.Y(), dirRot.Z());
-			m_hView->Rotate(rAng);
-		}
-	}
+	m_hView->SetAxis(ptCenter.X(), ptCenter.Y(), ptCenter.Z(), 
+		dirAxis.X(), dirAxis.Y(), dirAxis.Z());
+	m_hView->Rotate(dAngle);
 }
 
 void COCCView::ViewPan(Standard_Integer iPanningX, Standard_Integer iPanningY)
@@ -251,10 +233,10 @@ void COCCView::ViewPan(Standard_Integer iPanningX, Standard_Integer iPanningY)
 	m_hView->Pan(iPanningX, iPanningY);
 }
 
-void COCCView::ViewZoom(Standard_Integer iMouseX, Standard_Integer iMouseY, Standard_Real rZoomFactor)
+void COCCView::ViewZoom(Standard_Integer iMouseX, Standard_Integer iMouseY, Standard_Real dZoomFactor)
 {
 	// Calculate zoom coefficient
-	Standard_Real rZoomCoef = rZoomFactor;
+	Standard_Real rZoomCoef = dZoomFactor;
 	if (m_hView->Type() == V3d_PERSPECTIVE)
 		if (rZoomCoef < 1.)
 		{
@@ -266,27 +248,27 @@ void COCCView::ViewZoom(Standard_Integer iMouseX, Standard_Integer iMouseY, Stan
 	// Calculate zoom point
 	Standard_Real rAtX, rAtY, rAtZ;
 	m_hView->At(rAtX, rAtY, rAtZ);
-	gp_Pnt pntAt(rAtX, rAtY, rAtZ);
+	gp_Pnt ptAt(rAtX, rAtY, rAtZ);
 
 	Standard_Real rProjX, rProjY, rProjZ;
 	m_hView->Proj(rProjX, rProjY, rProjZ);
 	gp_Dir dirProj(rProjX, rProjY, rProjZ);
 
-	gp_Pln plnView(pntAt, dirProj);
-	gp_Pnt pntMouse;
-	ConvertClickToPoint(iMouseX, iMouseY, plnView, m_hView, pntMouse);
-	gp_Vec vecMouse(pntAt, pntMouse);
+	gp_Pln plnView(ptAt, dirProj);
+	gp_Pnt ptMouse;
+	ConvertClickToPoint(iMouseX, iMouseY, plnView, m_hView, ptMouse);
+	gp_Vec vecMouse(ptAt, ptMouse);
 
 
 	// Calculate panning distance
-	gp_Pnt pntOrg;
-	ConvertClickToPoint(0, 0, plnView, m_hView, pntOrg);
-	gp_Pnt pntX;
-	ConvertClickToPoint(1, 0, plnView, m_hView, pntX);
-	gp_Pnt pntY;
-	ConvertClickToPoint(0, 1, plnView, m_hView, pntY);
-	gp_Dir dirX(gp_Vec(pntOrg, pntX));
-	gp_Dir dirY(gp_Vec(pntY, pntOrg));
+	gp_Pnt ptOrg;
+	ConvertClickToPoint(0, 0, plnView, m_hView, ptOrg);
+	gp_Pnt ptX;
+	ConvertClickToPoint(1, 0, plnView, m_hView, ptX);
+	gp_Pnt ptY;
+	ConvertClickToPoint(0, 1, plnView, m_hView, ptY);
+	gp_Dir dirX(gp_Vec(ptOrg, ptX));
+	gp_Dir dirY(gp_Vec(ptY, ptOrg));
 
 	Standard_Real rDX = vecMouse.Dot(dirX);
 	Standard_Real rDY = vecMouse.Dot(dirY);
@@ -428,11 +410,6 @@ void COCCView::DisplayModel(Handle(AIS_Shape) hAISShape)
 		return;
 
 	m_hContext->Display(hAISShape, Standard_False);
-
-	Handle(Prs3d_Drawer) hAttrib = hAISShape->Attributes();
-	Handle(Prs3d_ShadingAspect) hShadingAsp = hAttrib->ShadingAspect();
-	hShadingAsp->SetColor(Quantity_Color(0.8, 0.8, 0., Quantity_TOC_RGB), Aspect_TOFM_FRONT_SIDE);
-	hShadingAsp->SetColor(Quantity_Color(0.3, 0.3, 0.3, Quantity_TOC_RGB), Aspect_TOFM_BACK_SIDE);
 }
 
 void COCCView::RemoveModel(Handle(AIS_Shape) hAISShape)
@@ -441,4 +418,39 @@ void COCCView::RemoveModel(Handle(AIS_Shape) hAISShape)
 		return;
 
 	m_hContext->Remove(hAISShape, Standard_False);
+}
+
+// Mouse Event
+void COCCView::InputEvent(Standard_Integer iMouseX, Standard_Integer iMouseY)
+{
+	if (m_hContext.IsNull())
+		return;
+
+	m_hContext->MoveTo(iMouseX, iMouseY, m_hView, Standard_False);
+	m_hContext->SelectDetected();
+}
+
+void COCCView::ClearSelected()
+{
+	if (m_hContext.IsNull())
+		return;
+
+	m_hContext->ClearSelected(Standard_False);
+}
+
+void COCCView::GetSelected(vector<Standard_Address>& vecSelected)
+{
+	vecSelected.clear();
+	if (m_hContext.IsNull())
+		return;
+
+	Handle(AIS_InteractiveObject) hSelectedObject;
+	for (m_hContext->InitSelected(); m_hContext->MoreSelected(); m_hContext->NextSelected())
+	{
+		hSelectedObject = m_hContext->SelectedInteractive();
+		if (hSelectedObject.IsNull() || !hSelectedObject->IsKind(STANDARD_TYPE(AIS_Shape)))
+			continue;
+
+		vecSelected.push_back((Standard_Address)hSelectedObject.operator->());
+	}
 }

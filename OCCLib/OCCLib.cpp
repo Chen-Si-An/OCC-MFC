@@ -179,26 +179,36 @@ extern "C" void PASCAL EXPORT DrawHorzPlane(void* pView)
 }
 
 // Manipulate the camera
-extern "C" void PASCAL EXPORT ViewStartRotation(void* pView, double dCenter[3], int iMouseX, int iMouseY)
+extern "C" bool PASCAL EXPORT ViewConvert(void* pView, int iMouseX, int iMouseY, double dCenter[3], double dResult[3])
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
 	COCCView* pOCCView = (COCCView*)pView;
 	if (!pOCCView)
-		return;
+		return false;
 
-	return pOCCView->ViewStartRotation(gp_Pnt(dCenter[0], dCenter[1], dCenter[2]), iMouseX, iMouseY);
+	gp_Pnt ptCenter(dCenter[0], dCenter[1], dCenter[2]);
+	gp_Pnt ptResult;
+	pOCCView->ViewConvert(iMouseX, iMouseY, ptCenter, ptResult);
+
+	dResult[0] = ptResult.X();
+	dResult[1] = ptResult.Y();
+	dResult[2] = ptResult.Z();
+	
+	return true;
 }
 
-extern "C" void PASCAL EXPORT ViewRotation(void* pView, int iMouseX, int iMouseY)
+extern "C" void PASCAL EXPORT ViewRotate(void* pView, double dCenter[3], double dAxis[3], double dAngle)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-	COCCView* pOCCView = (COCCView*)pView;
+	COCCView *pOCCView = (COCCView*)pView;
 	if (!pOCCView)
 		return;
 
-	return pOCCView->ViewRotation(iMouseX, iMouseY);
+	gp_Pnt ptCenter(dCenter[0], dCenter[1], dCenter[2]);
+	gp_Dir dirAxis(dAxis[0], dAxis[1], dAxis[2]);
+	pOCCView->ViewRotate(ptCenter, dirAxis, dAngle);
 }
 
 extern "C" void PASCAL EXPORT ViewPan(void* pView, int iPanningX, int iPanningY)
@@ -257,7 +267,6 @@ extern "C" void* PASCAL EXPORT ReadStl(void* pView, LPCTSTR pcFileName)
 	return pOCCView->ReadStl(pcFileName);
 }
 
-// Delete Model
 extern "C" void PASCAL EXPORT DeleteModel(void* pView, void* pModel)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -295,4 +304,128 @@ extern "C" void PASCAL EXPORT RemoveModel(void* pView, void* pModel)
 	Handle(AIS_Shape) hAISShape = dynamic_cast<AIS_Shape*>(static_cast<AIS_InteractiveObject*>(pModel));
 	if (hAISShape)
 		pOCCView->RemoveModel(hAISShape);
+}
+
+extern "C" void PASCAL EXPORT SetModelColor(void* pModel, double dColor[3])
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	if (!pModel)
+		return;
+
+	Handle(AIS_Shape) hAISShape = dynamic_cast<AIS_Shape*>(static_cast<AIS_InteractiveObject*>(pModel));
+	if (!hAISShape)
+		return;
+
+	hAISShape->SetColor(Quantity_Color(dColor[0], dColor[1], dColor[2], Quantity_TOC_RGB));
+
+	Handle(Prs3d_Drawer) hPrs3dDrawer = hAISShape->Attributes();
+	if (!hPrs3dDrawer)
+		return;
+
+	Handle(Prs3d_ShadingAspect) hPrs3dShadingAspect = hPrs3dDrawer->ShadingAspect();
+	if (!hPrs3dShadingAspect)
+		return;
+
+	hPrs3dShadingAspect->SetColor(Quantity_Color(dColor[0], dColor[1], dColor[2], Quantity_TOC_RGB), Aspect_TOFM_FRONT_SIDE);
+	hPrs3dShadingAspect->SetColor(Quantity_Color(0.3, 0.3, 0.3, Quantity_TOC_RGB), Aspect_TOFM_BACK_SIDE);
+}
+
+extern "C" bool PASCAL EXPORT GetModelCenter(void* pModel, double dCenter[3])
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	if (!pModel)
+		return false;
+
+	Handle(AIS_Shape) hAISShape = dynamic_cast<AIS_Shape*>(static_cast<AIS_InteractiveObject*>(pModel));
+	if (!hAISShape)
+		return false;
+
+	Bnd_Box bndBox;
+	BRepBndLib::Add(hAISShape->Shape(), bndBox);
+
+	gp_Pnt ptCornerMin = bndBox.CornerMin().Transformed(hAISShape->LocalTransformation());
+	gp_Pnt ptCornerMax = bndBox.CornerMax().Transformed(hAISShape->LocalTransformation());
+	dCenter[0] = (ptCornerMin.X() + ptCornerMax.X()) / 2.0;
+	dCenter[1] = (ptCornerMin.Y() + ptCornerMax.Y()) / 2.0;
+	dCenter[2] = (ptCornerMin.Z() + ptCornerMax.Z()) / 2.0;
+
+	return true;
+}
+
+extern "C" bool PASCAL EXPORT GetLocalTransformation(void* pModel, double dMatrix[4][4])
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	if (!pModel)
+		return false;
+
+	Handle(AIS_Shape) hAISShape = dynamic_cast<AIS_Shape*>(static_cast<AIS_InteractiveObject*>(pModel));
+	if (!hAISShape)
+		return false;
+
+	for (int i = 0; i < 4; i++)
+		for (int j = 0; j < 4; j++)
+			dMatrix[i][j] = (i == j) ? 1. : 0.;
+
+	gp_Trsf trsf = hAISShape->LocalTransformation();
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 4; j++)
+			dMatrix[i][j] = trsf.Value(i + 1, j + 1);
+
+	return true;
+}
+
+extern "C" void PASCAL EXPORT SetLocalTransformation(void* pModel, double dMatrix[4][4])
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	if (!pModel)
+		return;
+
+	Handle(AIS_Shape) hAISShape = dynamic_cast<AIS_Shape*>(static_cast<AIS_InteractiveObject*>(pModel));
+	if (!hAISShape)
+		return;
+
+	gp_Trsf trsf;
+	trsf.SetValues(dMatrix[0][0], dMatrix[0][1], dMatrix[0][2], dMatrix[0][3], 
+		dMatrix[1][0], dMatrix[1][1], dMatrix[1][2], dMatrix[1][3], 
+		dMatrix[2][0], dMatrix[2][1], dMatrix[2][2], dMatrix[2][3]);
+	
+	hAISShape->SetLocalTransformation(trsf);
+}
+
+// Mouse event
+extern "C" void PASCAL EXPORT InputEvent(void* pView, int iMouseX, int iMouseY)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	COCCView* pOCCView = (COCCView*)pView;
+	if (!pOCCView)
+		return;
+
+	pOCCView->InputEvent(iMouseX, iMouseY);
+}
+
+extern "C" void PASCAL EXPORT ClearSelected(void* pView)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	COCCView* pOCCView = (COCCView*)pView;
+	if (!pOCCView)
+		return;
+
+	pOCCView->ClearSelected();
+}
+
+extern "C" void GetSelected(void* pView, vector<void*> &vecSelectedShape)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	COCCView* pOCCView = (COCCView*)pView;
+	if (!pOCCView)
+		return;
+
+	pOCCView->GetSelected(vecSelectedShape);
 }

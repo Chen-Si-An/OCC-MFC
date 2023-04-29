@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "Matrix4.h"
+
 
 class CMFCView : public CView
 {
@@ -44,10 +46,16 @@ protected:
 public:
 	int m_iCursorX;
 	int m_iCursorY;
+	double m_dCenter[3];
+	double m_dAxis[3];
+	CMatrix4 m_matModel;
+	int m_iMouseState;
+	void* m_pSelectedShape;
 
 	void DrawScene3D();
 
 	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnMButtonDown(UINT nFlags, CPoint point);
@@ -56,6 +64,12 @@ public:
 	afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
+	afx_msg void OnButtonSelectModel();
+	afx_msg void OnUpdateButtonSelectModel(CCmdUI* pCmdUI);
+	afx_msg void OnButtonRotateModel();
+	afx_msg void OnUpdateButtonRotateModel(CCmdUI* pCmdUI);
+	afx_msg void OnButtonMoveModel();
+	afx_msg void OnUpdateButtonMoveModel(CCmdUI* pCmdUI);
 };
 
 #ifndef _DEBUG  // 對 MFCView.cpp 中的版本進行偵錯

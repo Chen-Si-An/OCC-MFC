@@ -42,6 +42,9 @@
     <ClInclude Include="ExtDll.h">
       <Filter>標頭檔</Filter>
     </ClInclude>
+    <ClInclude Include="Matrix4.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MFCApp.cpp">
@@ -62,6 +65,9 @@
     <ClCompile Include="ExtDll.cpp">
       <Filter>來源檔案</Filter>
     </ClCompile>
+    <ClCompile Include="Matrix4.cpp">
+      <Filter>來源檔案</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MFCApp.rc">
@@ -70,6 +76,24 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="res\MFCApp.rc2">
+      <Filter>資源檔</Filter>
+    </None>
+    <None Include="RES\cursorMoldSelect.cur">
+      <Filter>資源檔</Filter>
+    </None>
+    <None Include="RES\cursorMoldRotate.cur">
+      <Filter>資源檔</Filter>
+    </None>
+    <None Include="RES\cursorMoldOffset.cur">
+      <Filter>資源檔</Filter>
+    </None>
+    <None Include="RES\cursorMoveModel.cur">
+      <Filter>資源檔</Filter>
+    </None>
+    <None Include="RES\cursorRotateModel.cur">
+      <Filter>資源檔</Filter>
+    </None>
+    <None Include="RES\cursorSelectModel.cur">
       <Filter>資源檔</Filter>
     </None>
   </ItemGroup>

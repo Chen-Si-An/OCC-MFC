@@ -187,6 +187,7 @@
     <ClInclude Include="ExtDll.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="MainFrm.h" />
+    <ClInclude Include="Matrix4.h" />
     <ClInclude Include="MFCApp.h" />
     <ClInclude Include="MFCDoc.h" />
     <ClInclude Include="MFCView.h" />
@@ -197,6 +198,7 @@
   <ItemGroup>
     <ClCompile Include="ExtDll.cpp" />
     <ClCompile Include="MainFrm.cpp" />
+    <ClCompile Include="Matrix4.cpp" />
     <ClCompile Include="MFCApp.cpp" />
     <ClCompile Include="MFCDoc.cpp" />
     <ClCompile Include="MFCView.cpp" />
@@ -211,6 +213,12 @@
     <ResourceCompile Include="MFCApp.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="RES\cursorMoldOffset.cur" />
+    <None Include="RES\cursorMoldRotate.cur" />
+    <None Include="RES\cursorMoldSelect.cur" />
+    <None Include="RES\cursorMoveModel.cur" />
+    <None Include="RES\cursorRotateModel.cur" />
+    <None Include="RES\cursorSelectModel.cur" />
     <None Include="res\MFCApp.rc2" />
   </ItemGroup>
   <ItemGroup>

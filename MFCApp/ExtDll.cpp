@@ -11,17 +11,17 @@ CExtDll::CExtDll()
 	//Create the view
 	m_CreateContext = NULL;
 	m_SetWindow = NULL;
-	m_EraseAllView = NULL;
+	m_EraseView = NULL;
 	m_Resize = NULL;
-	m_UpdateCurView = NULL;
+	m_UpdateView = NULL;
 
 	//Draw the background
 	m_DrawCoordSys = NULL;
 	m_DrawHorzPlane = NULL;
 	
 	//Manipulate the camera
-	m_ViewStartRotation = NULL;
-	m_ViewRotation = NULL;
+	m_ViewConvert = NULL;
+	m_ViewRotate = NULL;
 	m_ViewPan = NULL;
 	m_ViewZoom = NULL;
 
@@ -32,6 +32,15 @@ CExtDll::CExtDll()
 	m_DeleteModel = NULL;
 	m_DrawModel = NULL;
 	m_RemoveModel = NULL;
+	m_SetModelColor = NULL;
+	m_GetModelCenter = NULL;
+	m_GetModelMatrix = NULL;
+	m_SetModelMatrix = NULL;
+
+	// Selection
+	m_Select = NULL;
+	m_ClearSelected = NULL;
+	m_GetSelected = NULL;
 }
 
 CExtDll::~CExtDll()
@@ -71,8 +80,8 @@ void CExtDll::LoadDriver()
 		return;
 	}
 
-	m_EraseAllView = (ERASE_ALL_VIEW)GetProcAddress(m_hDriver, "EraseAllView");
-	if (!m_EraseAllView)
+	m_EraseView = (ERASE_VIEW)GetProcAddress(m_hDriver, "EraseAllView");
+	if (!m_EraseView)
 	{
 		AfxMessageBox(_T("GetProcAddress Failed"));
 		return;
@@ -92,8 +101,8 @@ void CExtDll::LoadDriver()
 		return;
 	}
 
-	m_UpdateCurView = (UPDATE_CUR_VIEW)GetProcAddress(m_hDriver, "UpdateCurrentViewer");
-	if (!m_UpdateCurView)
+	m_UpdateView = (UPDATE_VIEW)GetProcAddress(m_hDriver, "UpdateCurrentViewer");
+	if (!m_UpdateView)
 	{
 		AfxMessageBox(_T("GetProcAddress Failed"));
 		return;
@@ -115,15 +124,15 @@ void CExtDll::LoadDriver()
 	}
 
 	//Manipulate the camera
-	m_ViewStartRotation = (VIEW_START_ROTATION)GetProcAddress(m_hDriver, "ViewStartRotation");
-	if (!m_ViewStartRotation)
+	m_ViewConvert = (VIEW_CONVERT)GetProcAddress(m_hDriver, "ViewConvert");
+	if (!m_ViewConvert)
 	{
 		AfxMessageBox(_T("GetProcAddress Failed"));
 		return;
 	}
 
-	m_ViewRotation = (VIEW_ROTATION)GetProcAddress(m_hDriver, "ViewRotation");
-	if (!m_ViewRotation)
+	m_ViewRotate = (VIEW_ROTATE)GetProcAddress(m_hDriver, "ViewRotate");
+	if (!m_ViewRotate)
 	{
 		AfxMessageBox(_T("GetProcAddress Failed"));
 		return;
@@ -185,6 +194,56 @@ void CExtDll::LoadDriver()
 		AfxMessageBox(_T("GetProcAddress Failed"));
 		return;
 	}
+
+	m_SetModelColor = (SET_MODEL_COLOR)GetProcAddress(m_hDriver, "SetModelColor");
+	if (!m_SetModelColor)
+	{
+		AfxMessageBox(_T("GetProcAddress Failed"));
+		return;
+	}
+
+	m_GetModelCenter = (GET_MODEL_CENTER)GetProcAddress(m_hDriver, "GetModelCenter");
+	if (!m_GetModelCenter)
+	{
+		AfxMessageBox(_T("GetProcAddress Failed"));
+		return;
+	}
+
+	m_GetModelMatrix = (GET_MODEL_MATRIX)GetProcAddress(m_hDriver, "GetLocalTransformation");
+	if (!m_GetModelMatrix)
+	{
+		AfxMessageBox(_T("GetProcAddress Failed"));
+		return;
+	}
+
+	m_SetModelMatrix = (SET_MODEL_MATRIX)GetProcAddress(m_hDriver, "SetLocalTransformation");
+	if (!m_SetModelMatrix)
+	{
+		AfxMessageBox(_T("GetProcAddress Failed"));
+		return;
+	}
+
+	// Selection
+	m_Select = (SELECT)GetProcAddress(m_hDriver, "InputEvent");
+	if (!m_Select)
+	{
+		AfxMessageBox(_T("GetProcAddress Failed"));
+		return;
+	}
+
+	m_ClearSelected = (CLEAR_SELECTED)GetProcAddress(m_hDriver, "ClearSelected");
+	if (!m_ClearSelected)
+	{
+		AfxMessageBox(_T("GetProcAddress Failed"));
+		return;
+	}
+
+	m_GetSelected = (GET_SELECTED)GetProcAddress(m_hDriver, "GetSelected");
+	if (!m_GetSelected)
+	{
+		AfxMessageBox(_T("GetProcAddress Failed"));
+		return;
+	}
 }
 
 void CExtDll::FreeDriver()
@@ -228,13 +287,13 @@ void CExtDll::SetWindow(void* pView, HWND hwnd)
 	m_SetWindow(pView, hwnd);
 }
 
-void CExtDll::EraseAllView(void* pView)
+void CExtDll::EraseView(void* pView)
 {
-	if (!m_EraseAllView)
+	if (!m_EraseView)
 		return;
 	if (!pView)
 		return;
-	m_EraseAllView(pView);
+	m_EraseView(pView);
 }
 
 void CExtDll::Resize(void* pView)
@@ -246,13 +305,13 @@ void CExtDll::Resize(void* pView)
 	m_Resize(pView);
 }
 
-void CExtDll::UpdateCurrentViewer(void* pView)
+void CExtDll::UpdateView(void* pView)
 {
-	if (!m_UpdateCurView)
+	if (!m_UpdateView)
 		return;
 	if (!pView)
 		return;
-	m_UpdateCurView(pView);
+	m_UpdateView(pView);
 }
 
 //Draw the background
@@ -275,22 +334,22 @@ void CExtDll::DrawHorzPlane(void* pView)
 }
 
 //Manipulate the camera
-void CExtDll::ViewStartRotation(void* pView, double dCenter[3], int iMouseX, int iMouseY)
+bool CExtDll::ViewConvert(void* pView, int iMouseX, int iMouseY, double dCenter[3], double dResult[3])
 {
-	if (!m_ViewStartRotation)
-		return;
+	if (!m_ViewConvert)
+		return FALSE;
 	if (!pView)
-		return;
-	m_ViewStartRotation(pView, dCenter, iMouseX, iMouseY);
+		return FALSE;
+	return m_ViewConvert(pView, iMouseX, iMouseY, dCenter, dResult);
 }
 
-void CExtDll::ViewRotation(void* pView, int iMouseX, int iMouseY)
+void CExtDll::ViewRotate(void* pView, double dCenter[3], double dAxis[3], double dAngle)
 {
-	if (!m_ViewRotation)
+	if (!m_ViewRotate)
 		return;
 	if (!pView)
 		return;
-	m_ViewRotation(pView, iMouseX, iMouseY);
+	m_ViewRotate(pView, dCenter, dAxis, dAngle);
 }
 
 void CExtDll::ViewPan(void* pView, int iPanningX, int iPanningY)
@@ -375,4 +434,70 @@ void CExtDll::RemoveModel(void* pView, void* pModel)
 	if (!pModel)
 		return;
 	m_RemoveModel(pView, pModel);
+}
+
+void CExtDll::SetModelColor(void* pModel, double dColor[3])
+{
+	if (!m_SetModelColor)
+		return;
+	if (!pModel)
+		return;
+	m_SetModelColor(pModel, dColor);
+}
+
+bool CExtDll::GetModelCenter(void* pModel, double dCenter[3])
+{
+	if (!m_GetModelCenter)
+		return false;
+	if (!pModel)
+		return false;
+	m_GetModelCenter(pModel, dCenter);
+	return true;
+}
+
+bool CExtDll::GetModelMatrix(void* pModel, double dMatrix[4][4])
+{
+	if (!m_GetModelMatrix)
+		return false;
+	if (!pModel)
+		return false;
+	m_GetModelMatrix(pModel, dMatrix);
+	return true;
+}
+
+void CExtDll::SetModelMatrix(void* pModel, double dMatrix[4][4])
+{
+	if (!m_SetModelMatrix)
+		return;
+	if (!pModel)
+		return;
+	m_SetModelMatrix(pModel, dMatrix);
+}
+
+// Selection
+void CExtDll::Select(void* pView, int iMouseX, int iMouseY)
+{
+	if (!m_Select)
+		return;
+	if (!pView)
+		return;
+	m_Select(pView, iMouseX, iMouseY);
+}
+
+void CExtDll::ClearSelected(void* pView)
+{
+	if (!m_ClearSelected)
+		return;
+	if (!pView)
+		return;
+	m_ClearSelected(pView);
+}
+
+void CExtDll::GetSelected(void* pView, vector<void*>& vecSelected)
+{
+	if (!m_GetSelected)
+		return;
+	if (!pView)
+		return;
+	m_GetSelected(pView, vecSelected);
 }

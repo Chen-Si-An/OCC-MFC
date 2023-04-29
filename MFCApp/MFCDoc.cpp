@@ -12,6 +12,7 @@
 
 #include "MFCDoc.h"
 #include "ExtDll.h"
+#include "Matrix4.h"
 
 #include <propkey.h>
 
@@ -26,9 +27,9 @@ extern CExtDll g_ExtDll;
 IMPLEMENT_DYNCREATE(CMFCDoc, CDocument)
 
 BEGIN_MESSAGE_MAP(CMFCDoc, CDocument)
-	ON_COMMAND(ID_BUTTON_IMPORT_IGES, OnButtonImportIges)
-	ON_COMMAND(ID_BUTTON_IMPORT_STEP, OnButtonImportStep)
-	ON_COMMAND(ID_BUTTON_IMPORT_STL, OnButtonImportStl)
+	ON_COMMAND(ID_BUTTON_IMPORT_IGES, &CMFCDoc::OnButtonImportIges)
+	ON_COMMAND(ID_BUTTON_IMPORT_STEP, &CMFCDoc::OnButtonImportStep)
+	ON_COMMAND(ID_BUTTON_IMPORT_STL, &CMFCDoc::OnButtonImportStl)
 END_MESSAGE_MAP()
 
 
@@ -165,6 +166,9 @@ void CMFCDoc::OnButtonImportIges()
 	if (pModel)
 		m_vecModel.push_back(pModel);
 
+	if (m_pOCCView)
+		g_ExtDll.DrawModel(m_pOCCView, pModel);
+
 	UpdateAllViews(NULL);
 }
 
@@ -178,6 +182,9 @@ void CMFCDoc::OnButtonImportStep()
 	if (pModel)
 		m_vecModel.push_back(pModel);
 
+	if (m_pOCCView)
+		g_ExtDll.DrawModel(m_pOCCView, pModel);
+
 	UpdateAllViews(NULL);
 }
 
@@ -190,6 +197,9 @@ void CMFCDoc::OnButtonImportStl()
 	void* pModel = g_ExtDll.ReadStl(m_pOCCView, dlg.GetPathName());
 	if (pModel)
 		m_vecModel.push_back(pModel);
+
+	if (m_pOCCView)
+		g_ExtDll.DrawModel(m_pOCCView, pModel);
 
 	UpdateAllViews(NULL);
 }

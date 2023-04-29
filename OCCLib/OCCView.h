@@ -15,6 +15,7 @@
 #include <TopoDS_Face.hxx>
 #include <AIS_Shape.hxx>
 
+#include <BRepBndLib.hxx>
 #include <BRep_Builder.hxx>
 #include <BRepBuilderAPI_MakeEdge.hxx>
 #include <BRepBuilderAPI_MakeFace.hxx>
@@ -42,10 +43,6 @@ public:
 	Handle(AIS_Shape) m_hAISAxis[3];
 	Handle(AIS_Shape) m_hAISHorzPlane;
 
-	// Manipulate the camera
-	gp_Pnt m_pntRotCenter;
-	gp_Dir m_dirRotAxis;
-
 	// Model
 	vector<Handle(AIS_Shape)> m_vecAISModel;
 
@@ -65,10 +62,10 @@ public:
 	void DrawHorzPlane();
 
 	// Manipulate the camera
-	void ViewStartRotation(gp_Pnt pntCenter, Standard_Integer iMouseX, Standard_Integer iMouseY);
-	void ViewRotation(Standard_Integer iMouseX, Standard_Integer iMouseY);
+	Standard_Boolean ViewConvert(Standard_Integer iMouseX, Standard_Integer iMouseY, gp_Pnt ptRef, gp_Pnt& ptResult);
+	void ViewRotate(gp_Pnt ptCenter, gp_Dir dirAxis, Standard_Real dAngle);
 	void ViewPan(Standard_Integer iPanningX, Standard_Integer iPanningY);
-	void ViewZoom(Standard_Integer iMouseX, Standard_Integer iMouseY, Standard_Real rZoomFactor);
+	void ViewZoom(Standard_Integer iMouseX, Standard_Integer iMouseY, Standard_Real dZoomFactor);
 
 	// Model
 	void* ReadIges(LPCTSTR pcFileName);
@@ -77,5 +74,10 @@ public:
 	void DeleteModel(Handle(AIS_Shape) hAISShape);
 	void DisplayModel(Handle(AIS_Shape) hAISShape);
 	void RemoveModel(Handle(AIS_Shape) hAISShape);
+
+	// Mouse event
+	void InputEvent(Standard_Integer iMouseX, Standard_Integer iMouseY);
+	void ClearSelected();
+	void GetSelected(vector<Standard_Address>& vecSelected);
 };
 
