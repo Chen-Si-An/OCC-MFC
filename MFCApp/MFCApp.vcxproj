@@ -213,9 +213,6 @@
     <ResourceCompile Include="MFCApp.rc" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="RES\cursorMoldOffset.cur" />
-    <None Include="RES\cursorMoldRotate.cur" />
-    <None Include="RES\cursorMoldSelect.cur" />
     <None Include="RES\cursorMoveModel.cur" />
     <None Include="RES\cursorRotateModel.cur" />
     <None Include="RES\cursorSelectModel.cur" />
