@@ -62,10 +62,12 @@ public:
 	void DrawHorzPlane();
 
 	// Manipulate the camera
+	void ViewReset();
 	Standard_Boolean ViewConvert(Standard_Integer iMouseX, Standard_Integer iMouseY, gp_Pnt ptRef, gp_Pnt& ptResult);
 	void ViewRotate(gp_Pnt ptCenter, gp_Dir dirAxis, Standard_Real dAngle);
 	void ViewPan(Standard_Integer iPanningX, Standard_Integer iPanningY);
 	void ViewZoom(Standard_Integer iMouseX, Standard_Integer iMouseY, Standard_Real dZoomFactor);
+	void ViewSetProj(gp_Dir dirProj);
 
 	// Model
 	void* ReadIges(LPCTSTR pcFileName);

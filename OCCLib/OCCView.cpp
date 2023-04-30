@@ -63,6 +63,7 @@ void COCCView::CreateContext()
 	m_hView->SetProj(V3d_Zpos);
 	m_hView->SetZoom(3.33);
 	m_hView->SetViewMappingDefault();
+	m_hView->SetImmediateUpdate(Standard_False);
 
 	m_hContext = new AIS_InteractiveContext(m_hViewer);
 	m_hContext->SetDisplayMode(AIS_Shaded, Standard_False);
@@ -215,6 +216,11 @@ Standard_Boolean ConvertClickToPoint(Standard_Integer iMouseX, Standard_Integer 
 		return Standard_False;
 }
 
+void COCCView::ViewReset()
+{
+	m_hView->Reset(Standard_False);
+}
+
 Standard_Boolean COCCView::ViewConvert(Standard_Integer iMouseX, Standard_Integer iMouseY, gp_Pnt ptRef, gp_Pnt& ptResult)
 {
 	gp_Pln plnNear = GetNearPlane(m_hView, ptRef);
@@ -282,8 +288,6 @@ void COCCView::ViewZoom(Standard_Integer iMouseX, Standard_Integer iMouseY, Stan
 
 
 	// Zoom
-	Standard_Boolean bOldUpdate = m_hView->SetImmediateUpdate(Standard_False);
-
 	Standard_Real rOldDepth = m_hView->Depth();
 	m_hView->Panning(rPanningX, rPanningY);
 	m_hView->SetZoom(rZoomCoef);
@@ -294,12 +298,11 @@ void COCCView::ViewZoom(Standard_Integer iMouseX, Standard_Integer iMouseY, Stan
 	rAtY += rOffset * rProjY;
 	rAtZ += rOffset * rProjZ;
 	m_hView->SetAt(rAtX, rAtY, rAtZ);
+}
 
-	m_hView->SetImmediateUpdate(bOldUpdate);
-
-
-	// Update
-	m_hContext->UpdateCurrentViewer();
+void COCCView::ViewSetProj(gp_Dir dirProj)
+{
+	m_hView->SetProj(dirProj.X(), dirProj.Y(), dirProj.Z());
 }
 
 void* COCCView::ReadIges(LPCTSTR pcFileName)

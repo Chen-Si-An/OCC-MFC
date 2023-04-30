@@ -20,10 +20,12 @@ CExtDll::CExtDll()
 	m_DrawHorzPlane = NULL;
 	
 	//Manipulate the camera
+	m_ViewReset = NULL;
 	m_ViewConvert = NULL;
 	m_ViewRotate = NULL;
 	m_ViewPan = NULL;
 	m_ViewZoom = NULL;
+	m_ViewSetProj = NULL;
 
 	// Model
 	m_ReadIges = NULL;
@@ -124,6 +126,13 @@ void CExtDll::LoadDriver()
 	}
 
 	//Manipulate the camera
+	m_ViewReset = (VIEW_RESET)GetProcAddress(m_hDriver, "ViewReset");
+	if (!m_ViewReset)
+	{
+		AfxMessageBox(_T("GetProcAddress Failed"));
+		return;
+	}
+
 	m_ViewConvert = (VIEW_CONVERT)GetProcAddress(m_hDriver, "ViewConvert");
 	if (!m_ViewConvert)
 	{
@@ -147,6 +156,13 @@ void CExtDll::LoadDriver()
 
 	m_ViewZoom = (VIEW_ZOOM)GetProcAddress(m_hDriver, "ViewZoom");
 	if (!m_ViewZoom)
+	{
+		AfxMessageBox(_T("GetProcAddress Failed"));
+		return;
+	}
+
+	m_ViewSetProj = (VIEW_SET_PROJ)GetProcAddress(m_hDriver, "ViewSetProj");
+	if (!m_ViewSetProj)
 	{
 		AfxMessageBox(_T("GetProcAddress Failed"));
 		return;
@@ -334,6 +350,15 @@ void CExtDll::DrawHorzPlane(void* pView)
 }
 
 //Manipulate the camera
+void CExtDll::ViewReset(void* pView)
+{
+	if (!m_ViewReset)
+		return;
+	if (!pView)
+		return;
+	m_ViewReset(pView);
+}
+
 bool CExtDll::ViewConvert(void* pView, int iMouseX, int iMouseY, double dCenter[3], double dResult[3])
 {
 	if (!m_ViewConvert)
@@ -368,6 +393,15 @@ void CExtDll::ViewZoom(void* pView, int iMouseX, int iMouseY, double dZoomFactor
 	if (!pView)
 		return;
 	m_ViewZoom(pView, iMouseX, iMouseY, dZoomFactor);
+}
+
+void CExtDll::ViewSetProj(void* pView, double dProjX, double dProjY, double dProjZ)
+{
+	if (!m_ViewSetProj)
+		return;
+	if (!pView)
+		return;
+	m_ViewSetProj(pView, dProjX, dProjY, dProjZ);
 }
 
 void* CExtDll::ReadIges(void *pView, LPCTSTR pFileName)

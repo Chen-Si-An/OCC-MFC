@@ -70,6 +70,12 @@ public:
 	afx_msg void OnUpdateButtonRotateModel(CCmdUI* pCmdUI);
 	afx_msg void OnButtonMoveModel();
 	afx_msg void OnUpdateButtonMoveModel(CCmdUI* pCmdUI);
+	afx_msg void OnButtonViewTop();
+	afx_msg void OnButtonViewBottom();
+	afx_msg void OnButtonViewFront();
+	afx_msg void OnButtonViewBack();
+	afx_msg void OnButtonViewLeft();
+	afx_msg void OnButtonViewRight();
 };
 
 #ifndef _DEBUG  // 對 MFCView.cpp 中的版本進行偵錯

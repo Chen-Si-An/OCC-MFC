@@ -12,10 +12,12 @@ typedef void	(__stdcall* RESIZE)(void *pView);
 typedef void	(__stdcall* UPDATE_VIEW)(void *pView);
 typedef void	(__stdcall* DRAW_COORD_SYS)(void *pView);
 typedef void	(__stdcall* DRAW_HORZ_PLANE)(void *pView);
+typedef bool	(__stdcall* VIEW_RESET)(void *pView);
 typedef bool	(__stdcall* VIEW_CONVERT)(void *pView, int iMouseX, int iMouseY, double dCenter[3], double dResult[3]);
 typedef void    (__stdcall* VIEW_ROTATE)(void *pView, double dCenter[3], double dAxis[3], double dAngle);
 typedef void	(__stdcall* VIEW_PAN)(void* pView, int iPanningX, int iPanningY);
 typedef void	(__stdcall* VIEW_ZOOM)(void* pView, int iMouseX, int iMouseY, double dZoomFactor);
+typedef void	(__stdcall* VIEW_SET_PROJ)(void* pView, double dProjX, double dProjY, double dProjZ);
 typedef void*	(__stdcall* READ_IGES)(void* pView, LPCTSTR pcFileName);
 typedef void*	(__stdcall* READ_STEP)(void* pView, LPCTSTR pcFileName);
 typedef void*   (__stdcall* READ_STL)(void* pView, LPCTSTR pcFileName);
@@ -54,10 +56,12 @@ public:
 	DRAW_HORZ_PLANE	m_DrawHorzPlane;
 
 	// Manipulate the camera
+	VIEW_RESET		m_ViewReset;
 	VIEW_CONVERT	m_ViewConvert;
 	VIEW_ROTATE		m_ViewRotate;
 	VIEW_PAN		m_ViewPan;
 	VIEW_ZOOM		m_ViewZoom;
+	VIEW_SET_PROJ	m_ViewSetProj;
 
 	// Model
 	READ_IGES		m_ReadIges;
@@ -93,10 +97,12 @@ public:
 	void DrawHorzPlane(void *pView);
 
 	// Manipulate the camera
+	void ViewReset(void *pView);
 	bool ViewConvert(void *pView, int iMouseX, int iMouseY, double dCenter[3], double dResult[3]);
 	void ViewRotate(void *pView, double dCenter[3], double dAxis[3], double dAngle);
 	void ViewPan(void* pView, int iPanningX, int iPanningY);
 	void ViewZoom(void* pView, int iMouseX, int iMouseY, double dZoomFactor);
+	void ViewSetProj(void* pView, double dProjX, double dProjY, double dProjZ);
 
 	// Model
 	void* ReadIges(void* pView, LPCTSTR pcFileName);

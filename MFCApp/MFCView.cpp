@@ -75,6 +75,12 @@ BEGIN_MESSAGE_MAP(CMFCView, CView)
 	ON_UPDATE_COMMAND_UI(ID_BUTTON_ROTATE_MODEL, &CMFCView::OnUpdateButtonRotateModel)
 	ON_COMMAND(ID_BUTTON_MOVE_MODEL, &CMFCView::OnButtonMoveModel)
 	ON_UPDATE_COMMAND_UI(ID_BUTTON_MOVE_MODEL, &CMFCView::OnUpdateButtonMoveModel)
+	ON_COMMAND(ID_BUTTON_VIEW_TOP, &CMFCView::OnButtonViewTop)
+	ON_COMMAND(ID_BUTTON_VIEW_BOTTOM, &CMFCView::OnButtonViewBottom)
+	ON_COMMAND(ID_BUTTON_VIEW_FRONT, &CMFCView::OnButtonViewFront)
+	ON_COMMAND(ID_BUTTON_VIEW_BACK, &CMFCView::OnButtonViewBack)
+	ON_COMMAND(ID_BUTTON_VIEW_LEFT, &CMFCView::OnButtonViewLeft)
+	ON_COMMAND(ID_BUTTON_VIEW_RIGHT, &CMFCView::OnButtonViewRight)
 END_MESSAGE_MAP()
 
 // CMFCView 建構/解構
@@ -415,6 +421,8 @@ void CMFCView::OnMouseMove(UINT nFlags, CPoint point)
 			m_iCursorX = point.x;
 			m_iCursorY = point.y;
 			g_ExtDll.ViewPan(pDoc->m_pOCCView, iPanningX, iPanningY);
+
+			g_ExtDll.UpdateView(pDoc->m_pOCCView);
 		}
 		else if (nFlags & MK_RBUTTON)
 		{
@@ -426,6 +434,8 @@ void CMFCView::OnMouseMove(UINT nFlags, CPoint point)
 			Cross(dVector, m_dAxis, dAxis);
 			double dAngle = Angle(dVector, m_dAxis);
 			g_ExtDll.ViewRotate(pDoc->m_pOCCView, m_dCenter, dAxis, dAngle);
+
+			g_ExtDll.UpdateView(pDoc->m_pOCCView);
 		}
 	}
 
@@ -451,7 +461,10 @@ BOOL CMFCView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 			dZoomFactor = 1. / (1. - dStep);
 
 		if (dZoomFactor > 0.)
+		{
 			g_ExtDll.ViewZoom(pDoc->m_pOCCView, ptClient.x, ptClient.y, dZoomFactor);
+			g_ExtDll.UpdateView(pDoc->m_pOCCView);
+		}
 		else
 			ASSERT(0);
 	}
@@ -487,4 +500,70 @@ void CMFCView::OnButtonMoveModel()
 void CMFCView::OnUpdateButtonMoveModel(CCmdUI* pCmdUI)
 {
 	pCmdUI->SetCheck(m_iMouseState == MOUSE_MOVE_MODEL);
+}
+
+void CMFCView::OnButtonViewTop()
+{
+	CMFCDoc* pDoc = GetDocument();
+	if (pDoc && pDoc->m_pOCCView)
+	{
+		g_ExtDll.ViewReset(pDoc->m_pOCCView);
+		g_ExtDll.ViewSetProj(pDoc->m_pOCCView, 0., 0., 1.);
+		g_ExtDll.UpdateView(pDoc->m_pOCCView);
+	}
+}
+
+void CMFCView::OnButtonViewBottom()
+{
+	CMFCDoc* pDoc = GetDocument();
+	if (pDoc && pDoc->m_pOCCView)
+	{
+		g_ExtDll.ViewReset(pDoc->m_pOCCView);
+		g_ExtDll.ViewSetProj(pDoc->m_pOCCView, 0., 0., -1.);
+		g_ExtDll.UpdateView(pDoc->m_pOCCView);
+	}
+}
+
+void CMFCView::OnButtonViewFront()
+{
+	CMFCDoc* pDoc = GetDocument();
+	if (pDoc && pDoc->m_pOCCView)
+	{
+		g_ExtDll.ViewReset(pDoc->m_pOCCView);
+		g_ExtDll.ViewSetProj(pDoc->m_pOCCView, 0., 1., 0.);
+		g_ExtDll.UpdateView(pDoc->m_pOCCView);
+	}
+}
+
+void CMFCView::OnButtonViewBack()
+{
+	CMFCDoc* pDoc = GetDocument();
+	if (pDoc && pDoc->m_pOCCView)
+	{
+		g_ExtDll.ViewReset(pDoc->m_pOCCView);
+		g_ExtDll.ViewSetProj(pDoc->m_pOCCView, 0., -1., 0.);
+		g_ExtDll.UpdateView(pDoc->m_pOCCView);
+	}
+}
+
+void CMFCView::OnButtonViewLeft()
+{
+	CMFCDoc* pDoc = GetDocument();
+	if (pDoc && pDoc->m_pOCCView)
+	{
+		g_ExtDll.ViewReset(pDoc->m_pOCCView);
+		g_ExtDll.ViewSetProj(pDoc->m_pOCCView, -1., 0., 0.);
+		g_ExtDll.UpdateView(pDoc->m_pOCCView);
+	}
+}
+
+void CMFCView::OnButtonViewRight()
+{
+	CMFCDoc* pDoc = GetDocument();
+	if (pDoc && pDoc->m_pOCCView)
+	{
+		g_ExtDll.ViewReset(pDoc->m_pOCCView);
+		g_ExtDll.ViewSetProj(pDoc->m_pOCCView, 1., 0., 0.);
+		g_ExtDll.UpdateView(pDoc->m_pOCCView);
+	}
 }

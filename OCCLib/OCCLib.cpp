@@ -179,6 +179,17 @@ extern "C" void PASCAL EXPORT DrawHorzPlane(void* pView)
 }
 
 // Manipulate the camera
+extern "C" void PASCAL EXPORT ViewReset(void* pView)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	COCCView* pOCCView = (COCCView*)pView;
+	if (!pOCCView)
+		return;
+
+	return pOCCView->ViewReset();
+}
+
 extern "C" bool PASCAL EXPORT ViewConvert(void* pView, int iMouseX, int iMouseY, double dCenter[3], double dResult[3])
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -231,6 +242,19 @@ extern "C" void PASCAL EXPORT ViewZoom(void* pView, int iMouseX, int iMouseY, do
 		return;
 
 	return pOCCView->ViewZoom(iMouseX, iMouseY, dZoomFactor);
+}
+
+// Set the projection of the view
+extern "C" void PASCAL EXPORT ViewSetProj(void* pView, double dProjX, double dProjY, double dProjZ)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	COCCView* pOCCView = (COCCView*)pView;
+	if (!pOCCView)
+		return;
+
+	gp_Dir dirProj(dProjX, dProjY, dProjZ);
+	pOCCView->ViewSetProj(dirProj);
 }
 
 // Model
