@@ -1,5 +1,5 @@
 # OCC-MFC
-### This project employs OpenCASCADE library to implement data visualization under MFC framework, supporting IGES, STEP, STL files. Additionally, this application provides fundamental model transformation and camera manipulation.
+### This project employs OpenCASCADE library to implement data visualization under MFC framework, supporting IGES, STEP, and STL files. Additionally, this application provides fundamental model transformation and camera manipulation.
 
 * Given functions
   1.  ![Image](https://github.com/Chen-Si-An/OCC-MFC/blob/main/Import_IGES.bmp) Import IGES: Open the file dialog and select the IGES files you wish to import.
