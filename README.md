@@ -2,9 +2,9 @@
 ### This project employs OpenCASCADE library to implement data visualization under MFC framework, supporting IGES, STEP, and STL files. Additionally, this application provides fundamental model transformation and camera manipulation.
 
 * Given functions
-  1.  ![Image](https://github.com/Chen-Si-An/OCC-MFC/blob/main/Import_IGES.bmp) Import IGES: Open the file dialog and select the IGES files you wish to import.
-  2.  ![Image](https://github.com/Chen-Si-An/OCC-MFC/blob/main/Import_STEP.bmp) Import STEP: Open the file dialog and select the STEP files you wish to import.
-  3.  ![Image](https://github.com/Chen-Si-An/OCC-MFC/blob/main/Import_STL.bmp) Import STL: Open the file dialog and select the STL files you wish to import.
+  1.  ![Image](https://github.com/Chen-Si-An/OCC-MFC/blob/main/Import_IGES.bmp) Import IGES: Open the file dialog and select the IGES file you wish to import.
+  2.  ![Image](https://github.com/Chen-Si-An/OCC-MFC/blob/main/Import_STEP.bmp) Import STEP: Open the file dialog and select the STEP file you wish to import.
+  3.  ![Image](https://github.com/Chen-Si-An/OCC-MFC/blob/main/Import_STL.bmp) Import STL: Open the file dialog and select the STL file you wish to import.
   4.  ![Image](https://github.com/Chen-Si-An/OCC-MFC/blob/main/Export_STL.bmp) Export STL: Select the model you wish to export and press this button to export it to specified path.
   5.  ![Image](https://github.com/Chen-Si-An/OCC-MFC/blob/main/Select_Model.bmp) Select Model: Select the model displayed in the view.
   6.  ![Image](https://github.com/Chen-Si-An/OCC-MFC/blob/main/Rotate_Model.bmp) Rotate Model: Rotate the model displayed in the view.
