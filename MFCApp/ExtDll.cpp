@@ -36,6 +36,7 @@ CExtDll::CExtDll()
 	m_RemoveModel = NULL;
 	m_SetModelColor = NULL;
 	m_GetModelCenter = NULL;
+	m_GetModelMesh = NULL;
 	m_GetModelMatrix = NULL;
 	m_SetModelMatrix = NULL;
 
@@ -220,6 +221,13 @@ void CExtDll::LoadDriver()
 
 	m_GetModelCenter = (GET_MODEL_CENTER)GetProcAddress(m_hDriver, "GetModelCenter");
 	if (!m_GetModelCenter)
+	{
+		AfxMessageBox(_T("GetProcAddress Failed"));
+		return;
+	}
+
+	m_GetModelMesh = (GET_MODEL_MESH)GetProcAddress(m_hDriver, "GetModelMesh");
+	if (!m_GetModelMesh)
 	{
 		AfxMessageBox(_T("GetProcAddress Failed"));
 		return;
@@ -487,6 +495,15 @@ bool CExtDll::GetModelCenter(void* pModel, double dCenter[3])
 		return false;
 	m_GetModelCenter(pModel, dCenter);
 	return true;
+}
+
+void CExtDll::GetModelMesh(void* pModel, vector<double>& vecMesh)
+{
+	if (!m_GetModelMesh)
+		return;
+	if (!pModel)
+		return;
+	m_GetModelMesh(pModel, vecMesh);
 }
 
 bool CExtDll::GetModelMatrix(void* pModel, double dMatrix[4][4])

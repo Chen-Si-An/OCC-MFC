@@ -12,10 +12,11 @@
 #define ID_BUTTON_IMPORT_IGES           32771
 #define ID_BUTTON_IMPORT_STEP           32772
 #define ID_BUTTON_IMPORT_STL            32773
-#define ID_BUTTON_SELECT_MODEL          32774
-#define ID_BUTTON_ROTATE_MODEL          32775
-#define ID_BUTTON_MOVE_MODEL            32776
-#define ID_BUTTON_VIEW_TOP              32777
+#define ID_BUTTON_EXPORT_STL            32774
+#define ID_BUTTON_SELECT_MODEL          32775
+#define ID_BUTTON_ROTATE_MODEL          32776
+#define ID_BUTTON_MOVE_MODEL            32777
+#define ID_BUTTON_VIEW_TOP              32778
 #define ID_BUTTON_VIEW_BOTTOM           32779
 #define ID_BUTTON_VIEW_FRONT            32780
 #define ID_BUTTON_VIEW_BACK             32781
@@ -27,7 +28,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        312
-#define _APS_NEXT_COMMAND_VALUE         32784
+#define _APS_NEXT_COMMAND_VALUE         32785
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           310
 #endif

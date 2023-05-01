@@ -27,6 +27,7 @@ EXPORTS
     RemoveModel;
     SetModelColor;
     GetModelCenter;
+    GetModelMesh;
     GetLocalTransformation;
     SetLocalTransformation;
     InputEvent;

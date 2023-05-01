@@ -11,14 +11,18 @@
 #include <Geom_Plane.hxx>
 #include <GeomAPI_IntCS.hxx>
 
+#include <TopoDS.hxx>
 #include <TopoDS_Edge.hxx>
 #include <TopoDS_Face.hxx>
 #include <AIS_Shape.hxx>
+
+#include <TopExp_Explorer.hxx>
 
 #include <BRepBndLib.hxx>
 #include <BRep_Builder.hxx>
 #include <BRepBuilderAPI_MakeEdge.hxx>
 #include <BRepBuilderAPI_MakeFace.hxx>
+#include <BRepMesh_IncrementalMesh.hxx>
 
 #include <IGESControl_Reader.hxx>
 #include <STEPControl_Reader.hxx>

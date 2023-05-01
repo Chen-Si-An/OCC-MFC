@@ -378,6 +378,77 @@ extern "C" bool PASCAL EXPORT GetModelCenter(void* pModel, double dCenter[3])
 	return true;
 }
 
+extern "C" void PASCAL EXPORT GetModelMesh(void* pModel, vector<double>&vecMesh)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	vecMesh.clear();
+
+	if (!pModel)
+		return;
+
+	Handle(AIS_Shape) hAISShape = dynamic_cast<AIS_Shape*>(static_cast<AIS_InteractiveObject*>(pModel));
+	if (!hAISShape)
+		return;
+
+	TopoDS_Shape shape = hAISShape->Shape();
+	if (shape.IsNull())
+		return;
+	shape = shape.Located(hAISShape->LocalTransformation());
+
+	int iNbTriangles = 0;
+	for (TopExp_Explorer expFace(shape, TopAbs_FACE); expFace.More(); expFace.Next())
+	{
+		TopLoc_Location loc;
+		Handle(Poly_Triangulation) hPolyTriangulation = BRep_Tool::Triangulation(TopoDS::Face(expFace.Current()), loc);
+		if (hPolyTriangulation.IsNull())
+			continue;
+
+		iNbTriangles += hPolyTriangulation->NbTriangles();
+	}
+	vecMesh.resize(iNbTriangles * 3 * 3);
+
+	int iCount = 0;
+	for (TopExp_Explorer expFace(shape, TopAbs_FACE); expFace.More(); expFace.Next())
+	{
+		TopoDS_Face face = TopoDS::Face(expFace.Current());
+		TopLoc_Location loc;
+		Handle(Poly_Triangulation) hPolyTriangulation = BRep_Tool::Triangulation(face, loc);
+		if (hPolyTriangulation.IsNull())
+			continue;
+
+		for (int i = 1; i <= hPolyTriangulation->NbTriangles(); i++)
+		{
+			const Poly_Triangle& triangle = hPolyTriangulation->Triangle(i);
+
+			if (face.Orientation() != TopAbs_REVERSED)
+			{
+				for (int j = 1; j <= 3; j++)
+				{
+					gp_Pnt pt = hPolyTriangulation->Node(triangle(j));
+					pt.Transform(loc.Transformation());
+
+					vecMesh[iCount++] = pt.X();
+					vecMesh[iCount++] = pt.Y();
+					vecMesh[iCount++] = pt.Z();
+				}
+			}
+			else
+			{
+				for (int j = 3; j >=1; j--)
+				{
+					gp_Pnt pt = hPolyTriangulation->Node(triangle(j));
+					pt.Transform(loc.Transformation());
+
+					vecMesh[iCount++] = pt.X();
+					vecMesh[iCount++] = pt.Y();
+					vecMesh[iCount++] = pt.Z();
+				}
+			}
+		}
+	}
+}
+
 extern "C" bool PASCAL EXPORT GetLocalTransformation(void* pModel, double dMatrix[4][4])
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());

@@ -26,6 +26,7 @@ typedef void	(__stdcall* DRAW_MODEL)(void* pView, void* pModel);
 typedef void	(__stdcall* REMOVE_MODEL)(void* pView, void* pModel);
 typedef void	(__stdcall* SET_MODEL_COLOR)(void* pModel, double dColor[3]);
 typedef bool    (__stdcall* GET_MODEL_CENTER)(void* pModel, double dCenter[3]);
+typedef void	(__stdcall* GET_MODEL_MESH)(void* pModel, vector<double>& vecMesh);
 typedef bool    (__stdcall* GET_MODEL_MATRIX)(void* pModel, double dMatrix[4][4]);
 typedef void    (__stdcall* SET_MODEL_MATRIX)(void* pModel, double dMatrix[4][4]);
 typedef void	(__stdcall* SELECT)(void* pView, int iMouseX, int iMouseY);
@@ -72,6 +73,7 @@ public:
 	REMOVE_MODEL	m_RemoveModel;
 	SET_MODEL_COLOR	m_SetModelColor;
 	GET_MODEL_CENTER m_GetModelCenter;
+	GET_MODEL_MESH	m_GetModelMesh;
 	GET_MODEL_MATRIX m_GetModelMatrix;
 	SET_MODEL_MATRIX m_SetModelMatrix;
 
@@ -113,6 +115,7 @@ public:
 	void RemoveModel(void* pView, void* pModel);
 	void SetModelColor(void* pModel, double dColor[3]);
 	bool GetModelCenter(void* pModel, double dCenter[3]);
+	void GetModelMesh(void* pModel, vector<double>& vecMesh);
 	bool GetModelMatrix(void* pModel, double dMatrix[4][4]);
 	void SetModelMatrix(void* pModel, double dMatrix[4][4]);
 

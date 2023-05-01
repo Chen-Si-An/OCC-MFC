@@ -125,6 +125,33 @@ void CMFCView::OnInitialUpdate()
 	}
 }
 
+
+BOOL CMFCView::PreTranslateMessage(MSG* pMsg)
+{
+	// TODO: 在此加入特定的程式碼和 (或) 呼叫基底類別
+	// Check key delete
+	if (pMsg->message == WM_KEYDOWN)
+	{
+		if (pMsg->wParam == VK_DELETE)
+		{
+			CMFCDoc* pDoc = GetDocument();
+			if (pDoc && pDoc->m_pOCCView && m_pSelectedShape)
+			{
+				g_ExtDll.DeleteModel(pDoc->m_pOCCView, m_pSelectedShape);
+
+				vector<void*>::iterator it = find(pDoc->m_vecModel.begin(), pDoc->m_vecModel.end(), m_pSelectedShape);
+				if (it != pDoc->m_vecModel.end())
+					pDoc->m_vecModel.erase(it);
+				m_pSelectedShape = NULL;
+
+				Invalidate();
+			}
+		}
+	}
+
+	return CView::PreTranslateMessage(pMsg);
+}
+
 // CMFCView 繪圖
 
 void CMFCView::OnDraw(CDC* /*pDC*/)
@@ -383,6 +410,7 @@ void CMFCView::OnMouseMove(UINT nFlags, CPoint point)
 					double dAngle = Angle(m_dAxis, dVector);
 
 					CMatrix4 matModel;
+					matModel.SetIdentity();
 					matModel.SetRotation(dAxis[0], dAxis[1], dAxis[2], dAngle, m_dCenter[0], m_dCenter[1], m_dCenter[2]);
 					matModel *= m_matModel;
 

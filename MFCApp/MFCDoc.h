@@ -45,6 +45,8 @@ protected:
 	afx_msg void OnButtonImportIges();
 	afx_msg void OnButtonImportStep();
 	afx_msg void OnButtonImportStl();
+	afx_msg void OnButtonExportStl();
+	afx_msg void OnUpdateButtonExportStl(CCmdUI* pCmdUI);
 	DECLARE_MESSAGE_MAP()
 
 #ifdef SHARED_HANDLERS
