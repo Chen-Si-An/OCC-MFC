@@ -19,4 +19,6 @@
   15.  Mouse wheel: Roll the mouse wheel to zoom in/out the view, or click the mouse wheel and hold it to pan the view.
   16.  Key delete: Push down the key delete to delete the selected model.
   
+ **Note: In this project, the OpenCASCADE library is introduced into MFC in the way of extern dll, making it available for software developers to link this dll to their own applications.** 
+  
   ![Image](https://github.com/Chen-Si-An/OCC-MFC/blob/main/OCC_MFC.gif)
