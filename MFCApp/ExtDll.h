@@ -21,6 +21,7 @@ typedef void	(__stdcall* VIEW_SET_PROJ)(void* pView, double dProjX, double dProj
 typedef void*	(__stdcall* READ_IGES)(void* pView, LPCTSTR pcFileName);
 typedef void*	(__stdcall* READ_STEP)(void* pView, LPCTSTR pcFileName);
 typedef void*   (__stdcall* READ_STL)(void* pView, LPCTSTR pcFileName);
+typedef void*   (__stdcall* READ_OBJ)(void* pView, LPCTSTR pcFileName);
 typedef void	(__stdcall* DELETE_MODEL)(void* pView, void* pModel);
 typedef void	(__stdcall* DRAW_MODEL)(void* pView, void* pModel);
 typedef void	(__stdcall* REMOVE_MODEL)(void* pView, void* pModel);
@@ -68,6 +69,7 @@ public:
 	READ_IGES		m_ReadIges;
 	READ_STEP		m_ReadStep;
 	READ_STL		m_ReadStl;
+	READ_OBJ		m_ReadObj;
 	DELETE_MODEL	m_DeleteModel;
 	DRAW_MODEL		m_DrawModel;
 	REMOVE_MODEL	m_RemoveModel;
@@ -110,6 +112,7 @@ public:
 	void* ReadIges(void* pView, LPCTSTR pcFileName);
 	void* ReadStep(void* pView, LPCTSTR pcFileName);
 	void* ReadStl(void* pView, LPCTSTR pcFileName);
+	void* ReadObj(void* pView, LPCTSTR pcFileName);
 	void DeleteModel(void* pView, void* pModel);
 	void DrawModel(void* pView, void* pModel);
 	void RemoveModel(void* pView, void* pModel);

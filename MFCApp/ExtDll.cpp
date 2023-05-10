@@ -31,6 +31,7 @@ CExtDll::CExtDll()
 	m_ReadIges = NULL;
 	m_ReadStep = NULL;
 	m_ReadStl = NULL;
+	m_ReadObj = NULL;
 	m_DeleteModel = NULL;
 	m_DrawModel = NULL;
 	m_RemoveModel = NULL;
@@ -186,6 +187,13 @@ void CExtDll::LoadDriver()
 
 	m_ReadStl = (READ_STL)GetProcAddress(m_hDriver, "ReadStl");
 	if (!m_ReadStl)
+	{
+		AfxMessageBox(_T("GetProcAddress Failed"));
+		return;
+	}
+
+	m_ReadObj = (READ_OBJ)GetProcAddress(m_hDriver, "ReadObj");
+	if (!m_ReadObj)
 	{
 		AfxMessageBox(_T("GetProcAddress Failed"));
 		return;
@@ -443,6 +451,17 @@ void* CExtDll::ReadStl(void* pView, LPCTSTR pFileName)
 	if (!pFileName)
 		return NULL;
 	return m_ReadStl(pView, pFileName);
+}
+
+void* CExtDll::ReadObj(void* pView, LPCTSTR pFileName)
+{
+	if (!m_ReadObj)
+		return NULL;
+	if (!pView)
+		return NULL;
+	if (!pFileName)
+		return NULL;
+	return m_ReadObj(pView, pFileName);
 }
 
 void CExtDll::DeleteModel(void* pView, void* pModel)

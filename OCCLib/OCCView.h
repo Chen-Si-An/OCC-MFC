@@ -27,6 +27,7 @@
 #include <IGESControl_Reader.hxx>
 #include <STEPControl_Reader.hxx>
 #include <RWStl.hxx>
+#include <RWObj.hxx>
 
 // Standard includes
 #include <vector>
@@ -77,6 +78,7 @@ public:
 	void* ReadIges(LPCTSTR pcFileName);
 	void* ReadStep(LPCTSTR pcFileName);
 	void* ReadStl(LPCTSTR pcFileName);
+	void* ReadObj(LPCTSTR pcFileName);
 	void DeleteModel(Handle(AIS_Shape) hAISShape);
 	void DisplayModel(Handle(AIS_Shape) hAISShape);
 	void RemoveModel(Handle(AIS_Shape) hAISShape);

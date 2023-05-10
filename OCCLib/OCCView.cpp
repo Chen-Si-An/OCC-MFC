@@ -398,6 +398,28 @@ void* COCCView::ReadStl(LPCTSTR pcFileName)
 	return (Standard_Address)hAISShape.operator->();
 }
 
+void* COCCView::ReadObj(LPCTSTR pcFileName)
+{
+	Standard_Integer iLength = lstrlen(pcFileName);
+	Standard_CString csFileName = new Standard_Character[iLength + 1];
+	WideCharToMultiByte(CP_ACP, 0, pcFileName, -1, (char*)csFileName, iLength + 1, NULL, NULL);
+	Handle(Poly_Triangulation) pMesh = RWObj::ReadFile(csFileName);
+	delete[] csFileName;
+	if (pMesh.IsNull())
+		return NULL;
+	
+	TopoDS_Face faceOBJ;
+	BRep_Builder builderTool;
+	builderTool.MakeFace(faceOBJ, pMesh);
+	if (faceOBJ.IsNull())
+		return NULL;
+
+	Handle (AIS_Shape) hAISShape = new AIS_Shape(faceOBJ);
+	m_vecAISModel.push_back(hAISShape);
+
+	return (Standard_Address)hAISShape.operator->();
+}
+
 void COCCView::DeleteModel(Handle(AIS_Shape) hAISShape)
 {
 	if (hAISShape.IsNull())

@@ -291,6 +291,17 @@ extern "C" void* PASCAL EXPORT ReadStl(void* pView, LPCTSTR pcFileName)
 	return pOCCView->ReadStl(pcFileName);
 }
 
+extern "C" void* PASCAL EXPORT ReadObj(void* pView, LPCTSTR pcFileName)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	COCCView* pOCCView = (COCCView*)pView;
+	if (!pOCCView || !pcFileName)
+		return NULL;
+
+	return pOCCView->ReadObj(pcFileName);
+}
+
 extern "C" void PASCAL EXPORT DeleteModel(void* pView, void* pModel)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());

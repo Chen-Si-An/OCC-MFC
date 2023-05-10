@@ -22,6 +22,7 @@ EXPORTS
     ReadIges;
     ReadStep;
     ReadStl;
+    ReadObj;
     DeleteModel;
     DisplayModel;
     RemoveModel;

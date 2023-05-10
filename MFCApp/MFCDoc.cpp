@@ -80,6 +80,7 @@ BEGIN_MESSAGE_MAP(CMFCDoc, CDocument)
 	ON_COMMAND(ID_BUTTON_IMPORT_IGES, &CMFCDoc::OnButtonImportIges)
 	ON_COMMAND(ID_BUTTON_IMPORT_STEP, &CMFCDoc::OnButtonImportStep)
 	ON_COMMAND(ID_BUTTON_IMPORT_STL, &CMFCDoc::OnButtonImportStl)
+	ON_COMMAND(ID_BUTTON_IMPORT_OBJ, &CMFCDoc::OnButtonImportObj)
 	ON_COMMAND(ID_BUTTON_EXPORT_STL, &CMFCDoc::OnButtonExportStl)
 	ON_UPDATE_COMMAND_UI(ID_BUTTON_EXPORT_STL, &CMFCDoc::OnUpdateButtonExportStl)
 END_MESSAGE_MAP()
@@ -247,6 +248,22 @@ void CMFCDoc::OnButtonImportStl()
 		return;
 
 	void* pModel = g_ExtDll.ReadStl(m_pOCCView, dlg.GetPathName());
+	if (pModel)
+		m_vecModel.push_back(pModel);
+
+	if (m_pOCCView)
+		g_ExtDll.DrawModel(m_pOCCView, pModel);
+
+	UpdateAllViews(NULL);
+}
+
+void CMFCDoc::OnButtonImportObj()
+{
+	CFileDialog dlg(TRUE, _T("*.obj"), NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("OBJ Files (*.obj)|*.obj||"), NULL);
+	if (dlg.DoModal() != IDOK)
+		return;
+
+	void* pModel = g_ExtDll.ReadObj(m_pOCCView, dlg.GetPathName());
 	if (pModel)
 		m_vecModel.push_back(pModel);
 
