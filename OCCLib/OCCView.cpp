@@ -400,11 +400,17 @@ void* COCCView::ReadStl(LPCTSTR pcFileName)
 
 void* COCCView::ReadObj(LPCTSTR pcFileName)
 {
+	/*
 	Standard_Integer iLength = lstrlen(pcFileName);
 	Standard_CString csFileName = new Standard_Character[iLength + 1];
 	WideCharToMultiByte(CP_ACP, 0, pcFileName, -1, (char*)csFileName, iLength + 1, NULL, NULL);
 	Handle(Poly_Triangulation) pMesh = RWObj::ReadFile(csFileName);
 	delete[] csFileName;
+	*/
+	RWObj_TriangulationReader reader;
+	reader.SetCreateShapes(Standard_False);
+	reader.Read(TCollection_AsciiString(pcFileName), Message_ProgressRange());
+	Handle(Poly_Triangulation) pMesh = reader.GetTriangulation();
 	if (pMesh.IsNull())
 		return NULL;
 	

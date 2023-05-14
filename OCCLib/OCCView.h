@@ -27,7 +27,8 @@
 #include <IGESControl_Reader.hxx>
 #include <STEPControl_Reader.hxx>
 #include <RWStl.hxx>
-#include <RWObj.hxx>
+//#include <RWObj.hxx>
+#include <RWObj_TriangulationReader.hxx>
 
 // Standard includes
 #include <vector>
